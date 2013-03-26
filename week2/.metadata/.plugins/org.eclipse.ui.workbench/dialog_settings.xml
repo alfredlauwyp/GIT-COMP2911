@@ -4,6 +4,7 @@
 		<item value="false" key="WizardFileSystemResourceImportPage1.STORE_OVERWRITE_EXISTING_RESOURCES_ID"/>
 		<item value="false" key="WizardFileSystemResourceImportPage1.STORE_CREATE_CONTAINER_STRUCTURE_ID"/>
 		<list key="WizardFileSystemResourceImportPage1.STORE_SOURCE_NAMES_ID">
+			<item value="/tmp_amd/ravel/import/1/hsmi665/COMP2911/GIT-COMP2911/week3/mail"/>
 			<item value="/tmp_amd/ravel/import/1/hsmi665/COMP2911/GIT-COMP2911/week2"/>
 		</list>
 	</section>
@@ -18,6 +19,20 @@
 		</list>
 		<list key="textEntries">
 		</list>
+	</section>
+	<section name="NewWizardAction">
+		<item value="org.eclipse.jdt.junit.wizards.NewTestCaseCreationWizard" key="NewWizardSelectionPage.STORE_SELECTED_ID"/>
+		<list key="NewWizardSelectionPage.STORE_EXPANDED_CATEGORIES_ID">
+			<item value="org.eclipse.jdt.ui.java"/>
+			<item value="org.eclipse.jdt.ui.java/org.eclipse.jdt.junit"/>
+		</list>
+	</section>
+	<section name="ShowViewDialog">
+		<item value="359" key="DIALOG_WIDTH"/>
+		<item value="236" key="DIALOG_Y_ORIGIN"/>
+		<item value="782" key="DIALOG_X_ORIGIN"/>
+		<item value="441" key="DIALOG_HEIGHT"/>
+		<item value="1|Sans|10.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
 	</section>
 	<section name="ImportExportAction">
 		<item value="org.eclipse.ui.wizards.import.FileSystem" key="ImportExportPage.STORE_SELECTED_IMPORT_WIZARD_ID"/>

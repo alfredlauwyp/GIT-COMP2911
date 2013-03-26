@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
+	<item value="500" key="CallHierarchyViewPart.ratio3"/>
 	<item value="java-6-openjdk" key="org.eclipse.jdt.ui.last.selected.project.jre"/>
+	<item value="500" key="CallHierarchyViewPart.ratio1"/>
+	<item value="3" key="CallHierarchyViewPart.orientation"/>
 	<item value="2" key="org.eclipse.jdt.ui.last.selected.jre.kind2"/>
+	<item value="1" key="SearchScopeActionGroup.search_scope_type"/>
+	<item value="2" key="CallHierarchyViewPart.field_mode"/>
+	<item value="0" key="CallHierarchyViewPart.call_mode"/>
 	<item value="JavaSE-1.6" key="org.eclipse.jdt.ui.last.selected.execution.enviroment"/>
+	<item value="/tmp_amd/ravel/import/1/hsmi665/COMP2911/GIT-COMP2911/week3/mail2" key="org.eclipse.jdt.ui.last.external.project"/>
+	<list key="SearchScopeActionGroup.working_set">
+	</list>
+	<section name="OptionalMessageDialog.hide.">
+		<item value="true" key="org.eclipse.jdt.ui.typecomment.deprecated"/>
+	</section>
 	<section name="org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart">
 		<item value="true" key="group_libraries"/>
 		<item value="false" key="linkWithEditor"/>
@@ -15,5 +27,18 @@
 	<section name="JavaElementSearchActions">
 	</section>
 	<section name="quick_assist_proposal_size">
+	</section>
+	<section name="SearchInDialog">
+		<item value="true" key="SearchInJRE"/>
+		<item value="true" key="SearchInProjects"/>
+		<item value="true" key="SearchInAppLibs"/>
+		<item value="true" key="SearchInSources"/>
+	</section>
+	<section name="NewClassWizardPage">
+		<item value="false" key="create_constructor"/>
+		<item value="false" key="create_main"/>
+		<item value="true" key="create_unimplemented"/>
+	</section>
+	<section name="CallHierarchySearchScope">
 	</section>
 </section>
