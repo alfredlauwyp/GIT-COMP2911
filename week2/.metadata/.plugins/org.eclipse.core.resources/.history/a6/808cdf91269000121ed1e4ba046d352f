@@ -1,0 +1,125 @@
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+
+
+public class MessageQueueTest {
+
+	@Test
+	public void testMessageQueue() {
+		
+		MessageQueue newMessages = new MessageQueue();
+		
+		Message msg1 = new Message("MSG1");
+		Message msg2 = new Message("MSG2");
+		Message msg3 = new Message("MSG3");
+		Message msg4 = new Message("MSG4");
+		Message msg5 = new Message("MSG5");
+		
+		System.out.println("\nAdding 5 messages to message queue");
+		
+		newMessages.add(msg1);
+		newMessages.add(msg2);
+		newMessages.add(msg3);
+		newMessages.add(msg4);
+		newMessages.add(msg5);
+		
+		System.out.println("\nPrinting 5 messages");
+		System.out.println(newMessages.printList());
+		
+		System.out.println("\nRemove 2 head elements");
+		newMessages.remove();
+		newMessages.remove();
+		
+		System.out.println("\nPrinting 3 messages (first 2 removed)");
+		System.out.println(newMessages.printList());
+		
+		//fail("Not yet implemented");
+	}
+
+	@Test
+	public void testDelete() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testRemove() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testAdd() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testSize() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testPeek() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testObject() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testGetClass() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testHashCode() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testEquals() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testClone() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testToString() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testNotify() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testNotifyAll() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testWaitLong() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testWaitLongInt() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testWait() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testFinalize() {
+		fail("Not yet implemented");
+	}
+
+}

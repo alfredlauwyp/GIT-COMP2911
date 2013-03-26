@@ -1,0 +1,103 @@
+import static org.junit.Assert.*;
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+
+public class MessageQueueTest {
+
+	@Test
+	public void testDelete() {
+		
+	}
+
+	@Test
+	public void testRemove() {
+
+		MessageQueue newMessages = new MessageQueue();
+		
+		Message msg0 = new Message("MSG0");
+		Message msg1 = new Message("MSG1");
+		Message msg2 = new Message("MSG2");
+		
+		System.out.println("--Adding 3 messages to message queue--");
+		
+		newMessages.add(msg0);
+		newMessages.add(msg1);
+		newMessages.add(msg2);
+		
+		for (Integer c = 0; c < 3; c++)
+		{
+			Assert.assertEquals(newMessages.getStr(c),"MSG" + c);
+		}
+		
+		System.out.println("--Remove 2 head elements--");
+		newMessages.remove();
+		newMessages.remove();
+		
+		Assert.assertEquals(newMessages.getStr(0), "MSG" + 1);
+		
+		System.out.println("--testRemove passed--\n");
+		
+	}
+
+	@Test
+	public void testAdd() {
+
+		MessageQueue newMessages = new MessageQueue();
+		
+		Message msg0 = new Message("MSG0");
+		Message msg1 = new Message("MSG1");
+		Message msg2 = new Message("MSG2");
+		
+		System.out.println("--Adding 3 messages to message queue--");
+		
+		newMessages.add(msg0);
+		newMessages.add(msg1);
+		newMessages.add(msg2);
+		
+		for (Integer c = 0; c < 3; c++)
+		{
+			Assert.assertEquals(newMessages.getStr(c),"MSG" + c);
+		}
+		
+		System.out.println("--testAdd passed--\n");
+	}
+
+	@Test
+	public void testSize() {
+		
+MessageQueue newMessages = new MessageQueue();
+		
+		Message msg0 = new Message("MSG0");
+		
+		System.out.println("--Adding 1 messages to message queue--");
+		
+		newMessages.add(msg0);
+		
+		for (Integer c = 0; c < 1; c++)
+		{
+			Assert.assertEquals(newMessages.getStr(c),"MSG" + c);
+		}
+		
+		System.out.println("--Remove head element--");
+		newMessages.remove();
+		
+		Assert.assertEquals(newMessages.size(), 0);
+		
+		System.out.println("--testRemove passed--\n");
+		
+	}
+
+	@Test
+	public void testPeek() {
+		fail("Not yet implemented");
+	}
+
+	@Test
+	public void testGetClass() {
+		fail("Not yet implemented");
+	}
+
+
+}
