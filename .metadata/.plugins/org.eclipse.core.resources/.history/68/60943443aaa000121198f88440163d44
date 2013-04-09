@@ -1,0 +1,20 @@
+import java.util.ArrayList;
+
+/**
+ * Graph interface
+ * @author hsmi665
+ *
+ */
+public interface Graph<E> {
+	public void addNode(E e);
+	public void removeNode(E e);
+	public void addEdge(E from, E to);
+	public boolean isConnected(E from, E to);
+	public void removeEdge(E from, E to);
+	void printGraph();
+	boolean isInGraph(E e);
+	
+	ArrayList<E> getNeighbours(E e);
+	int getNumVertices();
+	int getNumEdges();
+}

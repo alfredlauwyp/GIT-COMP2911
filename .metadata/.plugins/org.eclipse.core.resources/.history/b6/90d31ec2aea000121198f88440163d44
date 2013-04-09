@@ -1,0 +1,85 @@
+import java.util.ArrayList;
+
+public class AdjListGraph<E> implements Graph<E> {
+
+	public AdjListGraph()
+	{
+		nodes = new ArrayList<ArrayList<E>>();
+	}
+	
+	@Override
+	public void addNode(E e) {
+		ArrayList<E> adjList = new ArrayList<E>();
+		adjList.add(e);
+		nodes.add(adjList);
+	}
+
+	@Override
+	public void removeNode(E e) {
+		nodes.remove(e);
+	}
+
+	@Override
+	public void addEdge(E from, E to) {
+		// TODO Auto-generated method stub	
+	}
+
+	@Override
+	public boolean isConnected(E from, E to) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void removeEdge(E from, E to) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void printGraph() {
+		int vertice = 0;
+		for (ArrayList<E> internal : nodes)
+		{
+			System.out.print("Vertice "+(vertice++)+" (" + internal.get(0) + "): ");
+			int listCounter = 0;
+			for (E item : internal)
+			{
+				System.out.print("(" + listCounter + " " + item + ")");
+			}
+			System.out.print("\n");
+		}
+		System.out.print("\n");
+	}
+
+	@Override
+	public boolean isInGraph(E e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public ArrayList<E> getNeighbours(E e) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getNumVertices() {
+		return nodes.size();
+	}
+
+	@Override
+	public int getNumEdges() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public ArrayList<ArrayList<E>> getNodes()
+	{
+		return new ArrayList<ArrayList<E>>(nodes);
+	}
+	
+	private ArrayList<ArrayList<E>> nodes;
+	
+}
