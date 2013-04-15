@@ -1,0 +1,6 @@
+public class Wheel implements Part {
+	public int getWeight() {
+		return weight;
+	}
+	private int final weight = 20;
+}

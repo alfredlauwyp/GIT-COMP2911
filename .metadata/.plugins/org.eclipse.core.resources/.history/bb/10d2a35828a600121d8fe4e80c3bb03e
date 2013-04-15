@@ -1,0 +1,12 @@
+public class Wheel implements Part
+{
+	public Part()
+	{
+		weight = 20;
+	}
+	public int getWeight()
+	{
+		return weight;
+	}
+	private int weight;
+}

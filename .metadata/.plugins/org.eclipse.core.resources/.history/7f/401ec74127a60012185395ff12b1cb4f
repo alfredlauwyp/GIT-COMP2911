@@ -1,0 +1,9 @@
+public class Chassis
+{
+	public int getWeight() 
+	{
+		Wheel wheel = new Wheel();
+		
+		weight;
+	}
+}
