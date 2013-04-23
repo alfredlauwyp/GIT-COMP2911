@@ -1,8 +1,0 @@
-public class Steering
-{
-	public int getWeight()
-	{
-		return weight;
-	}
-	private final int weight = 10;
-}

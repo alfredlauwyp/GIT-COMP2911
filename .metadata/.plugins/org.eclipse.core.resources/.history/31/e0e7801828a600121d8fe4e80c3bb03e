@@ -1,9 +1,0 @@
-public class Chassis
-{
-	public int getWeight() 
-	{
-		Wheel wheel = new Wheel();
-		Steering steering = new Steering();
-		return steering.getWeight() + 4 * wheel.getWeight();
-	}
-}

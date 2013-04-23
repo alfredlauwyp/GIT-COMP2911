@@ -1,0 +1,29 @@
+Room 20 K17
+Book Hayden 20 53 Jan 1 0 24 Camp
+Book Hayden 20 52 Jan 2 0 24 Camp
+Book Hayden 20 52 Jan 3 0 24 Camp
+Book Hayden 20 52 Jan 4 0 24 Camp
+Book Hayden 20 52 Jan 5 0 24 Camp
+Book Hayden 20 52 Jan 6 0 24 Camp
+Book Hayden 20 52 Jan 7 0 24 Camp
+Print K17
+Change Hayden K17 53 Jan 1 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 2 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 3 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 4 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 5 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 6 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 7 0 20 Jan 1 0 12 SmallerCamp
+Change Hayden K17 52 Jan 2 0 20 Jan 2 0 12 SmallerCamp
+Change Hayden K17 52 Jan 3 0 20 Jan 3 0 12 SmallerCamp
+Change Hayden K17 52 Jan 4 0 20 Jan 4 0 12 SmallerCamp
+Change Hayden K17 52 Jan 5 0 20 Jan 5 0 12 SmallerCamp
+Change Hayden K17 52 Jan 6 0 20 Jan 6 0 12 SmallerCamp
+Change Hayden K17 52 Jan 7 0 20 Jan 7 0 12 SmallerCamp
+Print K17
+Book Fred 20 1 Dec 31 1 1 Lecture
+Book Fred 20 1 Jan 1 1 1 Lecture
+Delete Hayden K17 1 Jan 1 0
+Book Fred 20 1 Jan 1 1 23 Lecture
+Book Fred 20 1 Jan 1 1 23 Lecture
+Print K17

@@ -1,0 +1,29 @@
+Room K17 assigned
+K17
+Hayden Jan 1 0 24 Camp
+Hayden Jan 8 0 24 Camp
+Hayden Jan 15 0 24 Camp
+Room K17 assigned
+K17
+Hayden Jan 1 0 12 SmallerCamp
+Hayden Jan 8 0 12 SmallerCamp
+Hayden Jan 15 0 12 SmallerCamp
+Booking rejected
+K17
+Hayden Jan 1 0 12 SmallerCamp
+Hayden Jan 8 0 12 SmallerCamp
+Hayden Jan 15 0 12 SmallerCamp
+Reservations deleted
+K17
+Hayden Jan 8 0 12 SmallerCamp
+Hayden Jan 15 0 12 SmallerCamp
+Room K17 assigned
+K17
+Fred Jan 1 1 23 Lecture
+Hayden Jan 8 0 12 SmallerCamp
+Hayden Jan 15 0 12 SmallerCamp
+Booking rejected
+K17
+Fred Jan 1 1 23 Lecture
+Hayden Jan 8 0 12 SmallerCamp
+Hayden Jan 15 0 12 SmallerCamp

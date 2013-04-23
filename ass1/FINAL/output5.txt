@@ -1,0 +1,17 @@
+Room K17 assigned
+Room K17 assigned
+Room K17 assigned
+K17
+Hayden Jan 1 0 1 Camp
+Hayden Jan 1 1 1 Class
+Hayden Jan 1 2 1 Break
+Change rejected
+Change rejected
+Change rejected
+Change rejected
+Room K17 assigned
+Room K17 assigned
+K17
+Hayden Jan 1 0 1 SmallerCamp
+Hayden Jan 1 1 1 Class
+Hayden Jan 1 2 2 SmallerCamp

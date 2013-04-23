@@ -1,0 +1,13 @@
+Room 20 K17
+Book Hayden 20 3 Jan 1 0 24 Camp
+Print K17
+Change Hayden K17 3 Jan 1 0 20 Jan 1 0 12 SmallerCamp
+Print K17
+Book Fred 20 1 Jan 1 1 1 Lecture
+Print K17
+Delete Hayden K17 1 Jan 1 0
+Print K17
+Book Fred 20 1 Jan 1 1 23 Lecture
+Print K17
+Book Fred 20 1 Jan 1 1 23 Lecture
+Print K17

@@ -1,0 +1,76 @@
+Room Rtwenty assigned
+Room Rtwentyfour assigned
+Room Rtwentyfive assigned
+Room Rfive assigned
+Room Rsix assigned
+Room Rseven assigned
+Deletion rejected
+Rseven
+Hurt Mar 3 13 2 Lecture
+Hurt Mar 10 13 2 Lecture
+Reservations deleted
+Rseven
+Hurt Mar 3 13 2 Lecture
+Room Reight assigned
+Rtwenty
+Hayden Feb 4 13 1 Lecture
+Hayden Feb 11 13 1 Lecture
+Hayden Feb 18 13 1 Lecture
+Deletion rejected
+Reservations deleted
+Rtwenty
+Hayden Feb 4 13 1 Lecture
+Reservations deleted
+Rtwenty
+Rtwentyfive
+Barney Apr 2 13 4 Lecture
+Barney Apr 9 13 4 Lecture
+Barney Apr 16 13 4 Lecture
+Barney Apr 23 13 4 Lecture
+Barney Apr 30 13 4 Lecture
+Room Rtwentyfive assigned
+Rtwentyfive
+Barney Apr 2 13 4 Lecture
+Barney Apr 10 13 2 Project
+Barney Apr 17 13 2 Project
+Barney Apr 24 13 2 Project
+Barney Apr 30 13 4 Lecture
+Booking rejected
+Booking rejected
+Room Rtwentyfive assigned
+Rtwentyfive
+Barney Apr 2 13 4 Lecture
+Barney Apr 10 13 2 Project
+Fred Apr 10 15 1 Happiness
+Barney Apr 17 13 2 Project
+Barney Apr 24 13 2 Project
+Barney Apr 30 13 4 Lecture
+Rone
+Rtwo
+Rthree
+Rfour
+Rfive
+Steven Mar 3 13 2 Lecture
+Steven Mar 10 13 2 Lecture
+Rsix
+Kurt Mar 3 13 2 Lecture
+Kurt Mar 10 13 2 Lecture
+Rseven
+Hurt Mar 3 13 2 Lecture
+Reight
+Hurt Mar 3 13 2 Lecture
+Hurt Mar 10 13 2 Lecture
+Rnine
+Rtwenty
+Rtwentyone
+Rtwentytwo
+Rtwentythree
+Rtwentyfour
+James Apr 2 13 3 Lecture
+Rtwentyfive
+Barney Apr 2 13 4 Lecture
+Barney Apr 10 13 2 Project
+Fred Apr 10 15 1 Happiness
+Barney Apr 17 13 2 Project
+Barney Apr 24 13 2 Project
+Barney Apr 30 13 4 Lecture
