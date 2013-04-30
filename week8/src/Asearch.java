@@ -47,8 +47,7 @@ public class Asearch {
 					AsearchNode newNode = new AsearchNode(nodeName, cumulativeDistance, straightLineDistance, current);
 					
 															/*Debug*/System.out.println("...[Trying to add " + e.getTo().getValue() + " (" + newNode.getTotalDistances() + ")]");
-					
-															
+														
 					if (notVisited(nodeName))
 					{
 						if (notToVisit(nodeName))
@@ -58,7 +57,7 @@ public class Asearch {
 						}
 						else 
 						{
-							AsearchNode oldNode = findNode(nodeName);//
+							AsearchNode oldNode = findNodeToVisit(nodeName);//
 							if (newNode.getTotalDistances() < oldNode.getTotalDistances())
 							{
 								nodesToVisit.remove(oldNode); // Remove old node
@@ -86,9 +85,9 @@ public class Asearch {
 	
 	
 	
-	private AsearchNode findNode(String name)
+	private AsearchNode findNodeToVisit(String name)
 	{
-		for (AsearchNode item : nodesVisited)
+		for (AsearchNode item : nodesToVisit)
 		{
 			if (item.getValue() == name)
 			{
