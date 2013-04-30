@@ -1,7 +1,6 @@
 import java.util.LinkedList;
 import java.util.Comparator;
 import java.util.Collections;
-import java.lang.StringBuffer;
 
 /**
  * Implements Breadth First Search Algorithm
@@ -18,59 +17,141 @@ public class BFS {
 	
 	public String findPath(String nodeStart, String nodeFinish, Comparator<DSGEdge> comp)
 	{
+		/*Debug*/System.out.println("==================================================================STEVEN <3 ===============================================================");
+		
 		LinkedList<DSGNode> nodesVisited = new LinkedList<DSGNode>();
 		LinkedList<DSGNode> nodesToVisit = new LinkedList<DSGNode>();
 		LinkedList<DSGNode> parent = new LinkedList<DSGNode>();
-		DSGNode rootNode = allNodes.get(0);
-		
-		nodesToVisit.add(rootNode);
-		nodesVisited.add(rootNode);
-		
-		if (nodesVisited.size() == 1)
+		LinkedList<DSGNode> parentVisited = new LinkedList<DSGNode>();
+		if (allNodes.size() > 0)
 		{
-			parent.add(null);
+			DSGNode rootNode = allNodes.get(0);
+			nodesToVisit.add(rootNode);
+			parent.add(rootNode);
+			
+			DSGNode current = rootNode;
+			DSGNode parentTemp = current;
+			
+			/*Debug*/printNodes("AllNodes", allNodes);
+			/*Debug*/printEdges2("Edges (root node)", rootNode);
+						
+			while(!nodesToVisit.isEmpty() && !nodesVisited.contains(graph.findNode(nodeFinish)))
+			{
+
+				/*Debug*/System.out.println("\n");												
+				/*Debug*/System.out.println("=== Part 1 === START");
+				/*Debug*/printNodes("nodesVisited", nodesVisited);
+				/*Debug*/printNodes("nodesToVisit", nodesToVisit);
+				/*Debug*/printNodes("parent", parent);
+				/*Debug*/printNodes("parentVisited", parentVisited);
+
+				current = nodesToVisit.remove();
+				nodesVisited.add(current);
+				
+				parentTemp = parent.remove();
+				parentVisited.add(parentTemp);
+				
+				/*Debug*/System.out.println("\n=== Part 2 === ADDED TO PARENT VISITED / NODE VISITED");
+				/*Debug*/printNodes("nodesVisited", nodesVisited);
+				/*Debug*/printNodes("nodesToVisit", nodesToVisit);
+				/*Debug*/printNodes("parent", parent);
+				/*Debug*/printNodes("parentVisited", parentVisited);
+				
+				LinkedList<DSGEdge> toAdd = current.getEdges();
+																					
+				/*Debug*/System.out.println("\n=== Part 3 === PRINTING CURRENT EDGES");
+				/*Debug*/printEdges1("Edges...", toAdd);
+				
+				Collections.sort(toAdd, comp);
+				
+				/*Debug*/System.out.println("\n=== Part 4 === SORTED");
+				/*Debug*/printEdges1("Edges...", toAdd);
+																					
+				for (DSGEdge e : toAdd) 
+				{
+					if (!nodesVisited.contains(e.getTo()) && !nodesToVisit.contains(e.getTo()))
+					{
+						nodesToVisit.addLast(e.getTo());
+						parent.addLast(current);
+					}
+				}
+				/*Debug*/System.out.println("\n=== Part 5 === ALL THE OTHER STUFF");
+				/*Debug*/printNodes("nodesVisited-", nodesVisited);
+				/*Debug*/printNodes("parentVisited", parentVisited);
+				/*Debug*/printNodes("nodesToVisit", nodesToVisit);
+				/*Debug*/printNodes("parent", parent);
+				/*Debug*/System.out.println("\n\n");
+			}
+			
+			/*Debug*/System.out.println("Found it...");
+			/*Debug*///printNodes("nodesVisited", nodesVisited);
+			
+			if (nodesVisited.contains(graph.findNode(nodeFinish)))
+			{				
+				LinkedList<DSGNode> path = new LinkedList<DSGNode>();
+				
+				current	= graph.findNode(nodeFinish);
+				path.addFirst(current);
+				int index = nodesVisited.indexOf(current);
+				DSGNode currentParent = parentVisited.get(index);
+				while (current != currentParent)
+				{
+					current = currentParent;
+					index = nodesVisited.indexOf(current);
+					currentParent = parentVisited.get(index);
+					path.addFirst(current);
+				}
+				
+				/*Debug*/printNodes("FINAL: ", path);
+			}
+			
+			return null;
 		}
 		else
 		{
-			parent.addFirst(nodesVisited.get(1));
+			return "[X]";
 		}
-		while(!nodesToVisit.isEmpty() && !nodesVisited.isEmpty() && !nodesVisited.contains(graph.findNode(nodeFinish)))
+	}
+	
+	private void printNodes(String preface, LinkedList<DSGNode> list)
+	{
+		System.out.print(preface + ": .. ");
+		for (DSGNode item : list)
 		{
-			System.out.println("===LOOP===");
-			nodesToVisit.toString();
-			nodesVisited.toString();
-			System.out.println("Contains nodeFinish? " + nodesVisited.contains(graph.findNode(nodeFinish)));
-			DSGNode current = nodesVisited.remove();
-			LinkedList<DSGEdge> toAdd = current.getEdges();
-			Collections.sort(toAdd, comp);
-			for (DSGEdge e : toAdd) 
+			if (item != null) 
 			{
-				if (!nodesVisited.contains(e.getTo()))
-				{
-					nodesToVisit.addLast(e.getTo());
-					parent.addLast(current);
-				}
+				System.out.print(item.getValue());
+				
 			}
+			else {
+				System.out.print("NULL");
+			}
+			System.out.print("-");
 		}
-		
-		if (nodesVisited.contains(graph.findNode(nodeFinish)))
+		System.out.println();
+	}
+	
+	private void printEdges1(String preface, LinkedList<DSGEdge> edges)
+	{
+		System.out.print(preface + ": .. ");
+		for (DSGEdge item : edges)
 		{
-			StringBuffer result = new StringBuffer();
-			DSGNode current = graph.findNode(nodeFinish);
-			result.append(current.getValue() + " -> ");
-			int index = nodesVisited.indexOf(nodeFinish);
-			DSGNode currentParent = parent.get(index);
-			while (current != graph.findNode(nodeFinish) && currentParent != null)
-			{
-				current = currentParent;
-				index = nodesVisited.indexOf(nodeFinish);
-				currentParent = parent.get(index);
-				result.append(current.getValue() + " -> ");
-			}
-			return result.toString();
+			System.out.print(item.toString());
+			System.out.print(" || ");
 		}
-		return null;
-		
+		System.out.println();
+	}
+	
+	private void printEdges2(String preface, DSGNode node)
+	{
+		System.out.print(preface + ": .. ");
+		String[] edges = this.graph.getEdges(node.getValue());
+		for (int c = 0; c < edges.length; c++)
+		{
+			System.out.print(edges[c]);
+			System.out.print(" || ");
+		}
+		System.out.println();
 	}
 	
 	private DirectedStringGraph graph;

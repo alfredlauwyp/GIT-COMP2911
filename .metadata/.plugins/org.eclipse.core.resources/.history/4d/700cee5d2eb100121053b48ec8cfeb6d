@@ -1,0 +1,29 @@
+public class AsearchNode {
+
+	public AsearchNode(int previousPathDistance, int straightLineDistance, AsearchNode parent)
+	{
+		this.parent = parent;
+		this.previousPathDistance = previousPathDistance;
+		this.totalDistances = previousPathDistance + straightLineDistance;
+	}
+	
+	public AsearchNode getParent()
+	{
+		return this.parent;
+	}
+	
+	public int getPreviousPathDistance()
+	{
+		return this.previousPathDistance;
+	}
+	
+	public int getTotalDistances()
+	{
+		return this.totalDistances;
+	}
+	
+	AsearchNode parent;
+	private int previousPathDistance;
+	private int totalDistances;
+	
+}
