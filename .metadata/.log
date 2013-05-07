@@ -5386,3 +5386,13 @@ java.io.FileNotFoundException: /IMG_ETOOL_DELETE
 	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:629)
 	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:584)
 	at org.eclipse.equinox.launcher.Main.run(Main.java:1438)
+!SESSION 2013-05-07 12:07:11.357 -----------------------------------------------
+eclipse.buildId=M20120914-1800
+java.version=1.6.0_18
+java.vendor=Sun Microsystems Inc.
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Framework arguments:  -product org.eclipse.epp.package.jee.product
+Command-line arguments:  -os linux -ws gtk -arch x86 -product org.eclipse.epp.package.jee.product
+
+!ENTRY org.eclipse.core.resources 2 10035 2013-05-07 12:07:14.031
+!MESSAGE The workspace exited with unsaved changes in the previous session; refreshing workspace to recover changes.

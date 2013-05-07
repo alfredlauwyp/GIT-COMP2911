@@ -32,12 +32,14 @@ public class Telephone extends Applet
    private static final int BUTTONS_WIDTH = 3;
    private static final int BUTTONS_HEIGHT = 4;
    
-   public static void addComponentsToPane(Container pane) {
+   public void addComponentsToPane(Container pane) {
        if (RIGHT_TO_LEFT) {
            pane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
        }
 
        JButton panelButton;
+	JButton panelHangup;
+	JButton panelSend;
        JLabel panelLabel;
        JTextArea panelTextArea;
        
@@ -61,7 +63,7 @@ public class Telephone extends Applet
        
        
        
-       String values[][] = {
+       final String values[][] = {
     		   {"1", "2", "3"},
     		   {"4", "5", "6"},
     		   {"7","8","9"},
@@ -73,13 +75,38 @@ public class Telephone extends Applet
        {
     	   for (int j = 0; j < BUTTONS_WIDTH; j++)
     	   {
-    		   panelButton = new JButton(values[i][j]);
+    		   final String buttonText = values[i][j];
+    		   panelButton = new JButton(buttonText);
     		   c.gridx = j;
     		   c.gridy = gridY;
+    		   panelButton.addActionListener(new
+	             ActionListener()
+	               {
+	                  public void actionPerformed(ActionEvent event)
+	                  {
+	                     connect.dial(buttonText);
+	                  }
+	               });    		   
     		   pane.add(panelButton, c);
+    		   
     	   }
     	   gridY++;
        }
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
        c.gridwidth = 3;
        
        panelLabel = new JLabel("Microphone:");
@@ -87,17 +114,39 @@ public class Telephone extends Applet
        c.gridy = gridY++;
        pane.add(panelLabel, c);
      
-       panelTextArea = new JTextArea(10,10);
+       final JTextArea microphoneField = new JTextArea(10,25);
        c.gridx = 0;
        c.gridy = gridY++;
-       pane.add(panelTextArea, c);
+       pane.add(microphoneField, c);
 
        c.gridx = 0;
        c.gridy = gridY++;
        JPanel actions = new JPanel();
        actions.setLayout(new BorderLayout());
-       actions.add(new JButton("rawr"), BorderLayout.WEST);
-       actions.add(new JButton("rawr2"), BorderLayout.EAST);
+
+	panelHangup = new JButton("Hangup");
+	panelHangup.addActionListener(new
+         ActionListener()
+         {
+            public void actionPerformed(ActionEvent event)
+            {
+               connect.hangup();
+            }
+         });
+
+	panelSend = new JButton("Send Speech");
+	panelSend.addActionListener(new
+         ActionListener()
+         {
+            public void actionPerformed(ActionEvent event)
+            {
+               connect.record(microphoneField.getText());
+               microphoneField.setText("");
+            }
+         });
+
+       actions.add(panelSend, BorderLayout.WEST);
+       actions.add(panelHangup, BorderLayout.EAST);
        pane.add(actions, c);
        
    }
