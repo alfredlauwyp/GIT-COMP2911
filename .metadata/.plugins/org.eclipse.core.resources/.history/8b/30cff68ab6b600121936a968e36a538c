@@ -1,0 +1,237 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+import java.applet.Applet;
+import java.awt.GridBagLayout;
+
+/**
+   Presents a phone GUI for the voice mail system.
+*/
+public class Telephone extends Applet
+{
+   /**
+      Constructs a telephone with a speaker, keypad,
+      and microphone.
+   */
+   public Telephone()
+   {
+	  
+	   JFrame telephoneFrame = new JFrame("GridBagLayoutDemo");
+	   telephoneFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+       addComponentsToPane(telephoneFrame.getContentPane());
+       telephoneFrame.pack();
+       telephoneFrame.setVisible(true);
+       
+   }
+   
+   final static boolean shouldFill = true;
+   final static boolean shouldWeightX = true;
+   final static boolean RIGHT_TO_LEFT = false;
+
+   public static void addComponentsToPane(Container pane) {
+       if (RIGHT_TO_LEFT) {
+           pane.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+       }
+
+       JButton panelButton;
+       JLabel panelLabel;
+       JTextArea panelTextArea;
+       
+       pane.setLayout(new GridBagLayout());
+       GridBagConstraints c = new GridBagConstraints();
+       c.fill = GridBagConstraints.HORIZONTAL;
+       
+       int gridY = 0;
+
+       c.gridwidth = 3;
+       
+       panelLabel = new JLabel("Speaker:");
+       c.gridx = 0;
+       c.gridy = gridY++;
+       pane.add(panelLabel, c);
+     
+       panelTextArea = new JTextArea(10,10);
+       c.gridx = 0;
+       c.gridy = gridY++;
+       pane.add(panelTextArea, c);
+       
+       c.gridwidth = 1;
+       
+       panelButton = new JButton("1");
+       c.gridx = 0;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("2");
+       c.gridx = 1;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("3");
+       c.gridx = 2;
+       c.gridy = gridY++;
+       pane.add(panelButton, c);
+       
+       panelButton = new JButton("4");
+       c.gridx = 0;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("5");
+       c.gridx = 1;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("6");
+       c.gridx = 2;
+       c.gridy = gridY++;
+       pane.add(panelButton, c);
+       
+       panelButton = new JButton("7");
+       c.gridx = 0;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("8");
+       c.gridx = 1;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("9");
+       c.gridx = 2;
+       c.gridy = gridY++;
+       pane.add(panelButton, c);
+       
+       panelButton = new JButton("*");
+       c.gridx = 0;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("0");
+       c.gridx = 1;
+       c.gridy = gridY;
+       pane.add(panelButton, c);
+
+       panelButton = new JButton("#");
+       c.gridx = 2;
+       c.gridy = gridY++;
+       pane.add(panelButton, c);
+       
+       c.gridwidth = 3;
+       
+       panelLabel = new JLabel("Microphone:");
+       c.gridx = 0;
+       c.gridy = gridY++;
+       pane.add(panelLabel, c);
+     
+       panelTextArea = new JTextArea(10,10);
+       c.gridx = 0;
+       c.gridy = gridY++;
+       pane.add(panelTextArea, c);
+
+       pane.add(new JPanel());
+       /*panelButton = new JButton("5");
+       c.weighty = 1.0;   //request any extra vertical space
+       c.anchor = GridBagConstraints.PAGE_END; //bottom of space
+       c.gridx = 0;       //aligned with button 2
+       c.gridwidth = 1;   //2 columns wide
+       pane.add(panelButton, c);*/
+   }
+   
+   protected void makebutton(String name, GridBagLayout gridbag, GridBagConstraints c, JPanel panel)
+   {
+ 	  Button button = new Button(name);
+ 	  gridbag.setConstraints(button, c);
+ 	  add(button);
+   }
+		   
+/*		  
+      JPanel speakerPanel = new JPanel();
+      speakerPanel.setLayout(new BorderLayout());
+      speakerPanel.add(new JLabel("Speaker:"),
+            BorderLayout.NORTH);
+      speakerField = new JTextArea(10, 25);
+      speakerPanel.add(speakerField,
+            BorderLayout.CENTER);
+
+      String keyLabels = "123456789*0#";
+      JPanel keyPanel = new JPanel();
+      keyPanel.setLayout(new GridLayout(4, 3));
+      for (int i = 0; i < keyLabels.length(); i++)
+      {
+         final String label = keyLabels.substring(i, i + 1);
+         JButton keyButton = new JButton(label);
+         keyPanel.add(keyButton);
+         keyButton.addActionListener(new
+            ActionListener()
+            {
+               public void actionPerformed(ActionEvent event)
+               {
+                  connect.dial(label);
+               }
+            });
+      }
+      
+     
+
+      final JTextArea microphoneField = new JTextArea(10,25);
+
+      JButton speechButton = new JButton("Send speech");
+      speechButton.addActionListener(new
+         ActionListener()
+         {
+            public void actionPerformed(ActionEvent event)
+            {
+               connect.record(microphoneField.getText());
+               microphoneField.setText("");
+            }
+         });
+
+      JButton hangupButton = new JButton("Hangup");
+      hangupButton.addActionListener(new
+         ActionListener()
+         {
+            public void actionPerformed(ActionEvent event)
+            {
+               connect.hangup();
+            }
+         });
+
+      JPanel buttonPanel = new JPanel();
+      buttonPanel.add(speechButton);
+      buttonPanel.add(hangupButton);
+
+      JPanel microphonePanel = new JPanel();
+      microphonePanel.setLayout(new BorderLayout());
+      microphonePanel.add(new JLabel("Microphone:"),
+            BorderLayout.NORTH);
+      microphonePanel.add(microphoneField, BorderLayout.CENTER);
+      microphonePanel.add(buttonPanel, BorderLayout.SOUTH);
+
+      JFrame frame = new JFrame();
+      frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      frame.add(speakerPanel, BorderLayout.NORTH);
+      frame.add(keyPanel, BorderLayout.CENTER);
+      frame.add(microphonePanel, BorderLayout.SOUTH);
+
+      frame.pack();
+      frame.setVisible(true);
+   }*/
+
+   /**
+      Give instructions to the mail system user.
+   */
+   public void speak(String output)
+   {
+      speakerField.setText(output);
+   }
+
+   public void run(Connection c)
+   {
+      connect = c;
+   }
+
+   private JTextArea speakerField;
+   private Connection connect;
+}
