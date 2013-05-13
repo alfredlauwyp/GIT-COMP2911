@@ -1,0 +1,32 @@
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.awt.Point;
+
+public class PathFinder {
+	
+	public PathFinder(LinkedList<LinkedList<Point>> coordinates)
+	{
+		StandardGraph<LinkedList<Point>> graph = new StandardGraph<LinkedList<Point>>();
+		for (LinkedList<Point> locations : coordinates)
+		{
+			graph.addNode(locations);
+		}
+		graph.connectAllNodes();
+		
+		/*Comparator<AsearchNode> comparator = new Comparator<AsearchNode>() {
+		    public int compare(AsearchNode e1, AsearchNode e2) { 
+		    	if (e1.getTotalDistances() > e2.getTotalDistances()) return 1;
+		    	if (e1.getTotalDistances() < e2.getTotalDistances()) return -1;
+		    	else return 0;
+		    }
+		};*/
+		Asearch asearch = new Asearch(graph);
+		String path = asearch.findPath("Arad", "Bucharest", comparator);
+		System.out.println(path); */
+	}
+	
+	public String printPath()
+	{
+		return "Printing Path";
+	}
+}

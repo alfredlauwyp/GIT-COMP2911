@@ -1,0 +1,7 @@
+public class GeneratorCell extends Cell
+{
+	public GeneratorCell(int actualFinal)
+	{
+		super(actualFinal);
+	}
+}

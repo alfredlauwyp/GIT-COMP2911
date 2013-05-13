@@ -1,0 +1,18 @@
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+
+
+public interface Search {
+	public class Asearch<E> {
+
+		@SuppressWarnings("unchecked")
+		public Asearch(Graph graph)
+		{
+			this.graph = graph;
+			this.allNodes = graph.getNodes();
+		}
+		
+		public LinkedList<E> findPath(E initialNodeObj, Comparator<AsearchNode<E>> comp);
+}

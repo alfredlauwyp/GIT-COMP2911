@@ -1,0 +1,44 @@
+public class AsearchNode<E> {
+
+	public AsearchNode(E nodeObj)
+	{
+		this.nodeObj = nodeObj;
+	}
+	
+	public boolean equals(Object nodeObj)
+	{
+		if (nodeObj == this.name)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	public String getValue()
+	{
+		return this.name;
+	}
+	
+	public AsearchNode getParent()
+	{
+		return this.parent;
+	}
+	
+	public int getPreviousPathDistance()
+	{
+		return this.previousPathDistance;
+	}
+	
+	public int getTotalDistances()
+	{
+		return this.totalDistances;
+	}
+	
+	public String toString()
+	{
+		return "(OBJ: N "+this.name+" | P "+this.parent+" | PPD "+this.previousPathDistance+" | TD "+this.totalDistances+")";
+	}
+
+	private E nodeObj;
+	
+}

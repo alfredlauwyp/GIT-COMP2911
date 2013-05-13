@@ -1,0 +1,13 @@
+import java.util.ArrayList;
+import java.awt.Point;
+
+public class JobPoint
+{
+
+	public JobPoint(int fromX, int fromY, int toX, int toY)
+	{
+		
+	}
+	
+	private ArrayList<Point> jobs;
+}

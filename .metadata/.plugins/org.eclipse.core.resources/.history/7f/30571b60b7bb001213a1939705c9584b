@@ -1,0 +1,136 @@
+import java.util.LinkedList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.lang.StringBuffer;
+import java.util.ArrayList;
+
+/**
+ * Implements Breadth First Search Algorithm
+ * @author Hayden Smith
+ *
+ */
+public class Asearch<E> {
+
+	@SuppressWarnings("unchecked")
+	public Asearch(Graph graph)
+	{
+		this.graph = graph;
+		this.allNodes = graph.getNodes();
+	}
+	
+	public String findPath(E initialNodeObj, Comparator<AsearchNode<E>> comp)
+	{
+		
+		
+		
+		// Establish path to take
+		LinkedList<E> path = new LinkedList<E>();
+		PriorityQueue<AsearchNode<E>> priorityQueue = new PriorityQueue<AsearchNode<E>>(INITIAL_QUEUE_CAPACITY, comp);
+		
+		if (allNodes.size() > 0)
+		{
+			AsearchNode<E> current = new AsearchNode<E>(initialNodeObj, 0, null)
+			priorityQueue.add(current);
+			
+			boolean visitedAll = false;
+			
+			/**/LinkedList<Edge<Job>> toAdd = null;
+			
+			while (!priorityQueue.isEmpty() && !visitedAll)
+			{
+				current = priorityQueue.poll();
+			}
+			
+			/**/if(current.nodesVisited().size() == this.graph.size()) {
+			/**/	path.add(current.nodesVisited().toString());
+			/**/}
+			/**/return path;
+			 
+		}
+		
+		  
+		
+		   current = toVisit.remove();
+		   if(current.numNodesVisited() < this.graph.size()) {
+		    current.addVisited(current);
+		    System.out.println("Size is = " + current.nodesVisited().size());
+		    
+		    AStarJobNode connectedNode = ((AStarJobNode)(this.graph.findNode(current.getContents())));
+		    toAdd = connectedNode.getEdges();
+		    
+		    System.out.println(toAdd);
+		    for(Edge<Job> currentEdge : toAdd) {
+		     Node<Job> node = this.graph.findNode(currentEdge.getTo().getContents());
+		     AStarJobNode nodeToAdd = new AStarJobNode(node.getContents());
+		   
+		     if(!current.visited(nodeToAdd)) {
+		      double travelled = current.getTravelledDistance() + currentEdge.getWeight();
+		      nodeToAdd.setTravelledDist(travelled);
+		      nodeToAdd.setParent(current.getContents());
+		      for(Node<Job> alreadyVisited : current.nodesVisited()) {
+		       nodeToAdd.addVisited(alreadyVisited);
+		      }
+		      toVisit.add(nodeToAdd);
+		     }
+		      System.out.println(toVisit);
+		    }
+		   } else {
+		    visitedAll = true;
+		   }
+		  
+		  
+		 
+		  
+		  
+		 	
+			
+			// Get first node from AsearchNode nodes
+			AsearchNode current = priorityQueue.peek();
+			
+			while(!priorityQueue.isEmpty() && notVisited(nodeFinish))
+			{
+				current = priorityQueue.poll();
+				nodesVisited.add(current);		
+
+				LinkedList<DSGEdge> toAdd = graph.findNode(current.getValue()).getEdges();									
+								
+				for (DSGEdge e : toAdd) 
+				{
+					String nodeName = e.getTo().getValue();
+					int cumulativeDistance = e.getWeight() + current.getPreviousPathDistance();
+					int straightLineDistance = graph.findNode(nodeName).getStraightLineDistance();
+					AsearchNode newNode = new AsearchNode(nodeName, cumulativeDistance, straightLineDistance, current);
+					
+															
+														
+					if (notVisited(nodeName))
+					{
+						if (notToVisit(nodeName))
+						{
+							priorityQueue.add(newNode);
+															
+						}
+						else 
+						{
+							AsearchNode oldNode = findNodeToVisit(nodeName);//
+							if (newNode.getTotalDistances() < oldNode.getTotalDistances())
+							{
+								nodesToVisit.remove(oldNode); // Remove old node
+								nodesToVisit.add(newNode);
+							}
+						}
+					}
+				}
+			}
+			
+			return printNodes("\n\nFinal Path", nodesVisited);
+		
+		
+		
+	}
+		
+	private Graph graph;
+	private ArrayList<ArrayList<E>> allNodes;
+	private static final int INITIAL_QUEUE_CAPACITY = 100;
+
+}

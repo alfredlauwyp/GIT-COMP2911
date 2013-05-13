@@ -1,0 +1,38 @@
+/**
+ * Class to store and access values associated with an individual
+ *  cell in the grid
+ * @author Hayden, Laura, Jerome, Steven
+ * @version 0.1
+ * 
+ */
+public class Cell {
+
+	public Cell(int actualFinal)
+	{
+		this.valueMain = actualFinal;
+	}
+	
+	public int getValue()
+	{
+		return this.valueMain;
+	}
+	
+	public int setValue(int val)
+	{
+		return this.valueMain;
+	}
+	
+	public boolean isVisible()
+	{
+		return this.visible;
+	}
+	
+	public void setVisible(boolean preset)
+	{
+		this.visible = preset;
+	}
+	
+	protected int valueMain;
+	protected boolean visible;
+	
+}

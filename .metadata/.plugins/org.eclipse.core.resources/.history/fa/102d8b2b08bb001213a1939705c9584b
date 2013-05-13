@@ -1,0 +1,11 @@
+public class Tester {
+
+	public void main(String args[])
+	{
+		JobPoint a = new JobPoint(1,2,3,4);
+		System.out.println("From X: " + a.getFromX());
+		System.out.println("From Y: " + a.getFromY());
+		System.out.println("To X: " + a.getToX());
+		System.out.println("To Y: " + a.getToY());
+	}
+}

@@ -1,0 +1,108 @@
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.Scanner;
+import java.util.ArrayList;
+
+public class CourierDelivery
+{
+	/**
+	 * Main function for RoomBookingSystem
+	 * @param args data passed in from standard input
+	 */
+	public static void main(String[] args)
+	{
+		try
+	    {
+			Scanner userInput = new Scanner(new FileReader(args[0]));
+			graph = new AdjListGraph<JobPoint>();
+			
+			while (userInput.hasNextLine())
+			{
+				String input[] = userInput.nextLine().split(" ");
+				int fromX = Integer.parseInt(input[COODINATE_FROM_X]);
+				int fromY = Integer.parseInt(input[COODINATE_FROM_Y]);
+				int toX = Integer.parseInt(input[COODINATE_TO_X]);
+				int toY = Integer.parseInt(input[COODINATE_TO_Y]);
+				graph.addNode(new JobPoint(fromX, fromY, toX, toY));
+			}
+			userInput.close();
+			graph.connectAllNodes();
+			
+			speak(graph.toString());
+					
+			/*public int getInternalDistance();
+			public int getExternalDistanceTo(DualPoint pointTo);
+			public int getFromX();
+			public int getFromY();
+			public int getToX();
+			public int getToY();
+			public String toString();	
+		
+			public void addNode(E e);
+			public void removeNode(E e);
+			public void addEdge(E from, E to);
+			public boolean isConnected(E from, E to);
+			public void removeEdge(E from, E to);
+			public boolean isInGraph(E e);
+			public ArrayList<ArrayList<E>> getNodes();
+			ArrayList<E> getNeighbours(E e);
+			int getNumVertices();
+			int getNumEdges();*/
+			
+			
+			/*Comparator<AsearchNode> comparator = new Comparator<AsearchNode>() {
+			    public int compare(AsearchNode e1, AsearchNode e2) { 
+			    	if (e1.getTotalDistances() > e2.getTotalDistances()) return 1;
+			    	if (e1.getTotalDistances() < e2.getTotalDistances()) return -1;
+			    	else return 0;
+			    }
+			};*/
+			//Asearch asearch = new Asearch(graph);
+			//String path = asearch.findPath("Arad", "Bucharest", comparator);
+			
+			
+	    }
+	    catch (FileNotFoundException e)
+	    {
+	    	System.err.println("FileNotFoundException: " + e.getMessage());
+	    }
+		catch (ArrayIndexOutOfBoundsException e)
+		{
+			System.err.println("Please add a single parameter that is an input file");
+		}
+		
+	}
+	
+	private static void speak(String printout)
+	{
+		if (!printout.equals(""))
+		{
+			System.out.println(printout);
+		}
+	}
+	
+	private static void printGraph()
+	{
+		ArrayList<ArrayList<JobPoint>> nodes = graph.getNodes();
+		int maxX = 0;
+		int minX = 0;
+		int maxY = 0;
+		int minY = 0;
+		for (int i = 0; i < nodes.size(); i++)
+		{
+			nodes.get(i).get(0).getFromX();
+			nodes.get(i).get(0).getFromY();
+			nodes.get(i).get(0).getToX();
+			nodes.get(i).get(0).getToY();
+		}
+	}
+	
+	static AdjListGraph<JobPoint> graph = new AdjListGraph<JobPoint>();
+	private static final int COODINATE_FROM_X = 1;
+	private static final int COODINATE_FROM_Y = 2;
+	private static final int COODINATE_TO_X = 4;
+	private static final int COODINATE_TO_Y = 5;
+
+}
+
+

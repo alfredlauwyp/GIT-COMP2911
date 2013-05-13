@@ -1,0 +1,83 @@
+import java.util.LinkedList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+import java.lang.StringBuffer;
+import java.util.ArrayList;
+
+/**
+ * Implements Breadth First Search Algorithm
+ * @author Hayden Smith
+ *
+ */
+public class Asearch<E> {
+
+	@SuppressWarnings("unchecked")
+	public Asearch(Graph graph)
+	{
+		this.graph = graph;
+		this.allNodes = graph.getNodes();
+	}
+	
+	public String findPath(E initialNodeObj, Comparator<AsearchNode<E>> comp)
+	{
+		//nodesVisited = new LinkedList<AsearchNode<E>>();
+		PriorityQueue<AsearchNode<E>> priorityQueue = new PriorityQueue<AsearchNode<E>>(INITIAL_QUEUE_CAPACITY, comp);
+		
+		//public AsearchNode(E nodeObj, int distanceTravelled, E parentObj)
+		
+		if (allNodes.size() > 0)
+		{
+			// Find starting node and add it to nodeToVisit
+			DSGNode rootNode = graph.findNode(nodeStart);
+			priorityQueue.add(new AsearchNode(initialNodeObj, 0, null));
+			
+			// Get first node from AsearchNode nodes
+			AsearchNode current = nodesToVisit.peek();
+			
+			while(!nodesToVisit.isEmpty() && notVisited(nodeFinish))
+			{
+				current = nodesToVisit.poll();
+				nodesVisited.add(current);		
+
+				LinkedList<DSGEdge> toAdd = graph.findNode(current.getValue()).getEdges();									
+								
+				for (DSGEdge e : toAdd) 
+				{
+					String nodeName = e.getTo().getValue();
+					int cumulativeDistance = e.getWeight() + current.getPreviousPathDistance();
+					int straightLineDistance = graph.findNode(nodeName).getStraightLineDistance();
+					AsearchNode newNode = new AsearchNode(nodeName, cumulativeDistance, straightLineDistance, current);
+					
+															
+														
+					if (notVisited(nodeName))
+					{
+						if (notToVisit(nodeName))
+						{
+							nodesToVisit.add(newNode);
+															
+						}
+						else 
+						{
+							AsearchNode oldNode = findNodeToVisit(nodeName);//
+							if (newNode.getTotalDistances() < oldNode.getTotalDistances())
+							{
+								nodesToVisit.remove(oldNode); // Remove old node
+								nodesToVisit.add(newNode);
+							}
+						}
+					}
+				}
+			}
+			
+			return printNodes("\n\nFinal Path", nodesVisited);
+		
+		
+		
+	}
+		
+	private Graph graph;
+	private ArrayList<ArrayList<E>> allNodes;
+	private static final int INITIAL_QUEUE_CAPACITY = 100;
+
+}

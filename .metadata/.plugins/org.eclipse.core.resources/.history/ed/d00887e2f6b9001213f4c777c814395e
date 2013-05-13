@@ -1,0 +1,75 @@
+
+import java.util.Iterator;
+import java.util.LinkedList;
+
+/**
+ * Example Directed graph implementation for Strings for COMP2911 Lab Week 7
+ * @author Timothy Wiley
+ */
+public class DirectedStringGraph {
+	/**
+	 * The directed graph is represented by a list of nodes
+	 */
+	protected LinkedList<DSGNode> nodes;
+	static private final int IGNORE_WEIGHT_VALUE = 0;
+	
+	/**
+	 * Construct an empty Directed String Graph
+	 */
+	public DirectedStringGraph() {
+		nodes = new LinkedList<DSGNode>();
+	}
+	
+	/**
+	 * Add the given string to the graph, creating a new node.
+	 * Strings compared for uniqueness by their equals() method
+	 * @param s String to add to the graph
+	 */
+	public void addNode(String s) {
+		if (!containsNode(s)) {
+			DSGNode node = new DSGNode(s);
+			nodes.add(node);
+		}
+	}
+	
+	/**
+	 * Removes the given string from the graph, and all outgoing/incoming connections
+	 * Strings compared for uniqueness by their equals() method
+	 * @param s String to remove from the graph
+	 */
+	public void deleteNode(String s) {
+		// Get the node
+		DSGNode toDelete = findNode(s);
+		
+		if (toDelete != null) {
+			// Remove node
+			nodes.remove(toDelete);
+			
+			// Remove all incoming connections
+			for (DSGNode from : nodes) {
+				DSGEdge edge = new DSGEdge(from, toDelete, IGNORE_WEIGHT_VALUE);
+				deleteEdge(edge);
+			}
+		}
+	}
+
+	/**
+	 * Adds an directed edge from the node sFrom to the node sTo
+	 * @param sFrom From node
+	 * @param sTo To node
+	 * @param weight Weight of the link
+	 */
+	public void addEdge(String sFrom, String sTo, int weight) {
+		DSGNode from = findNode(sFrom);
+		DSGNode to = findNode(sTo);
+		
+		if (from != null && to != null) {
+			DSGEdge edge = new DSGEdge(from, to, weight);
+			if (!from.getEdges().contains(edge)) {
+				from.getEdges().add(edge);
+			}
+		}
+	}
+	
+	
+}

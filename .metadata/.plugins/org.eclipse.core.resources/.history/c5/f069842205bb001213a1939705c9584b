@@ -1,0 +1,60 @@
+import java.util.LinkedList;
+import java.awt.Point;
+
+public class JobPoint
+{
+
+	public JobPoint(int fromX, int fromY, int toX, int toY)
+	{
+		LinkedList<int> from = new LinkedList<int>();
+		from.add(INDEX_X, fromX);
+		from.add(INDEX_Y, fromY);
+		
+		LinkedList<int> to = new LinkedList<int>();
+		from.add(INDEX_X, toX);
+		from.add(INDEX_Y, toY);
+		
+		jobs = new LinkedList<LinkedList<int>>();
+		jobs.add(INDEX_FROM, from);
+		jobs.add(INDEX_TO, to);
+	}
+	
+	public int getFromX()
+	{
+		return getPointFrom().get(INDEX_X);
+	}
+	
+	public int getFromY()
+	{
+		return getPointFrom().get(INDEX_Y);
+	}
+	
+	public int getToX()
+	{
+		return getPointTo().get(INDEX_X);
+	}
+	
+	public int getTpY()
+	{
+		return getPointTo().get(INDEX_Y);
+	}
+	
+	private LinkedList<int> getPointFrom()
+	{
+		return jobs.get(INDEX_FROM);
+	}
+	
+	private LinkedList<int> getPointTo()
+	{
+		return jobs.get(INDEX_TO);
+	}
+	
+	private LinkedList<LinkedList<int>> jobs;
+	private static final int INDEX_FROM = 0;
+	private static final int INDEX_TO = 1;
+	private static final int INDEX_X = 0;
+	private static final int INDEX_Y = 1;
+	
+	
+	
+}

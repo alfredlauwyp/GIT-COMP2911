@@ -1,0 +1,25 @@
+public class AsearchNode<E> {
+
+	public AsearchNode(E nodeObj, boolean connected)
+	{
+		this.nodeObj = nodeObj;
+		this.connected = false;
+	}
+	
+	public boolean equals(Object nodeObj)
+	{
+		if (nodeObj == this.nodeObj)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	public E getNodeObj()
+	{
+		return this.nodeObj;
+	}
+
+	private E nodeObj;
+	
+}

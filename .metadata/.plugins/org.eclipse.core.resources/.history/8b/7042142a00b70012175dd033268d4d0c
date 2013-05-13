@@ -1,0 +1,8 @@
+public class BoardCell extends Cell{
+	
+	public BoardCell(int actualFinal, boolean preset)
+	{
+		this.actualFinal = actualFinal;
+	}
+	
+}
