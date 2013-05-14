@@ -7,6 +7,7 @@ public class MailSystemTester
       Telephone p = new Telephone();
       Connection c = new Connection(system, p);
       p.run(c);
+      c.resetConnection();
    }
 
    private static int MAILBOX_COUNT = 20;

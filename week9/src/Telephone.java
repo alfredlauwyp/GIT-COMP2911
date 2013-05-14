@@ -11,26 +11,26 @@ import java.awt.GridBagLayout;
 public class Telephone extends Applet
 {
    /**
-      Constructs a telephone with a speaker, keypad,
-      and microphone.
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+/**
+      Constructs a telephone with a speaker, keypad, and microphone.
    */
    public Telephone()
    {
-	  
+      initialise();
+   }
+   
+   public void initialise()
+   {
 	   JFrame telephoneFrame = new JFrame("GridBagLayoutDemo");
 	   telephoneFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
        addComponentsToPane(telephoneFrame.getContentPane());
        telephoneFrame.pack();
        telephoneFrame.setVisible(true);
-       
    }
    
-   final static boolean shouldFill = true;
-   final static boolean shouldWeightX = true;
-   final static boolean RIGHT_TO_LEFT = false;
-
-   private static final int BUTTONS_WIDTH = 3;
-   private static final int BUTTONS_HEIGHT = 4;
    
    public void addComponentsToPane(Container pane) {
        if (RIGHT_TO_LEFT) {
@@ -49,6 +49,7 @@ public class Telephone extends Applet
        
        int gridY = 0;
 
+       c.weightx = 1.0;
        c.gridwidth = 3;
        
        panelLabel = new JLabel("Speaker:");
@@ -56,7 +57,7 @@ public class Telephone extends Applet
        c.gridy = gridY++;
        pane.add(panelLabel, c);
      
-       panelTextArea = new JTextArea(10,10);
+       panelTextArea = new JTextArea("Please enter mailbox number followed by #", 10,10);
        c.gridx = 0;
        c.gridy = gridY++;
        pane.add(panelTextArea, c);
@@ -116,7 +117,7 @@ public class Telephone extends Applet
          {
             public void actionPerformed(ActionEvent event)
             {
-               connect.hangup();
+               //connect.hangup();
             }
          });
 
@@ -126,7 +127,7 @@ public class Telephone extends Applet
          {
             public void actionPerformed(ActionEvent event)
             {
-               connect.record(microphoneField.getText());
+               //connect.record(microphoneField.getText());
                microphoneField.setText("");
             }
          });
@@ -137,16 +138,6 @@ public class Telephone extends Applet
        
    }
    
-   protected void makebutton(String name, GridBagLayout gridbag, GridBagConstraints c, JPanel panel)
-   {
- 	  Button button = new Button(name);
- 	  gridbag.setConstraints(button, c);
- 	  add(button);
-   }
-   
-   /**
-      Give instructions to the mail system user.
-   */
    public void speak(String output)
    {
       speakerField.setText(output);
@@ -159,4 +150,11 @@ public class Telephone extends Applet
 
    private JTextArea speakerField;
    private Connection connect;
+   
+   final static boolean shouldFill = true;
+   final static boolean shouldWeightX = true;
+   final static boolean RIGHT_TO_LEFT = false;
+
+   private static final int BUTTONS_WIDTH = 3;
+   private static final int BUTTONS_HEIGHT = 4;
 }

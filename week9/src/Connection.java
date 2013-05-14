@@ -12,7 +12,7 @@ public class Connection
    {
       system = s;
       thePhone = p;
-      resetConnection();
+      
    }
 
    /**
@@ -58,7 +58,7 @@ public class Connection
       Reset the connection to the initial state and prompt
       for mailbox number
    */
-   private void resetConnection()
+   public void resetConnection()
    {
       currentRecording = "";
       accumulatedKeys = "";
