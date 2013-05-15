@@ -19,12 +19,33 @@ public class JobPoint implements DualPoint
 		this.internalDistance = (changeInX + changeInY);
 	}
 	
+	public boolean equals(Object obj)
+	{
+		boolean result = false;
+		
+		if(obj == this)
+		{
+			result =  true;
+		}
+		else if (obj.getClass() == JobPoint.class)
+		{
+			if (this.getFromX() == ((JobPoint)obj).getFromX() && this.getFromY() == ((JobPoint)obj).getFromY())
+			{
+				if (this.getToX() == ((JobPoint)obj).getToX() && this.getToY() == ((JobPoint)obj).getToY())
+				{
+					result = true;
+				}
+			}
+		}
+		return result;
+	}
+	
 	public int getInternalDistance()
 	{
 		return this.internalDistance;
 	}
 	
-	public int getExternalDistanceTo(JobPoint jobTo)
+	public int getExternalDistanceTo(DualPoint jobTo)
 	{
 		int changeInX = Math.abs(jobTo.getFromX() - this.getToX());
 		int changeInY = Math.abs(jobTo.getFromY() - this.getToY());
@@ -66,9 +87,9 @@ public class JobPoint implements DualPoint
 		return jobs.get(INDEX_TO);
 	}
 	
-	private LinkedList<Point> jobs;
-	private int internalDistance;
-	private static final int INDEX_FROM = 0;
-	private static final int INDEX_TO = 1;
+	protected LinkedList<Point> jobs;
+	protected int internalDistance;
+	protected static final int INDEX_FROM = 0;
+	protected static final int INDEX_TO = 1;
 	
 }

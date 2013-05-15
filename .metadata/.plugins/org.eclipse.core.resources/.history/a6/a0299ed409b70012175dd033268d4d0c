@@ -1,8 +1,0 @@
-public class GeneratorCell extends Cell
-{
-	public GeneratorCell(int actualFinal)
-	{
-		Cell(actualFinal);
-		//this.actualFinal = actualFinal;
-	}
-}

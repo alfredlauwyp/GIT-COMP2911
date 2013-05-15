@@ -57,4 +57,5 @@ public interface Graph<E> {
 	ArrayList<E> getNeighbours(E e);
 	int getNumVertices();
 	int getNumEdges();
+	
 }

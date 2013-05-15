@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;week9/src/MessageSystemTester.java&apos; to &apos;MailSystemTester.java&apos;" description="Rename resource &apos;MessageSystemTester.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/MessageSystemTester.java" name="MailSystemTester.java" stamp="1367886321491" updateReferences="true"/>
-</session>

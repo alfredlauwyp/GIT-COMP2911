@@ -1,7 +1,0 @@
-public class BoardCell extends Cell{
-	super();
-	public BoardCell(int actualFinal, boolean preset)
-	{
-		this.actualFinal = actualFinal;
-	}
-}

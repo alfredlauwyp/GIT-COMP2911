@@ -2,9 +2,9 @@ import java.util.ArrayList;
 
 public class PrintGraph {
 
-	public PrintGraph(AdjListGraph<JobPoint> graph)
+	public PrintGraph(AdjListGraph<DualPoint> graph)
 	{
-		ArrayList<ArrayList<JobPoint>> nodes = graph.getNodes();
+		ArrayList<ArrayList<DualPoint>> nodes = graph.getNodes();
 		int maxX = 0;
 		int maxY = 0;
 		for (int i = 0; i < nodes.size(); i++)

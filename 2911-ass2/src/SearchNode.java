@@ -1,14 +1,14 @@
 import java.util.LinkedList;
 
-public interface SearchNode<E> {
+public interface SearchNode {
 
 	public boolean equals(Object nodeObj);
-	public E getNodeObj();
-	//public void addVisited(D<E> newVisited);
+	public JobPoint getNodeObj();
+	public void addVisited(AsearchNode newVisited);
 	public int getNumNodesVisited();
-	public boolean hasVisited(E otherNode);
-	//public LinkedList<D<E>> getNodesVisited();
-	public LinkedList<E> getNodeObjsVisited();
+	public boolean hasVisited(AsearchNode otherNode);
+	public LinkedList<AsearchNode> getNodesVisited();
+	public LinkedList<AsearchNode> getNodeObjsVisited();
 	public int getDistanceTravelled();
 	
 }

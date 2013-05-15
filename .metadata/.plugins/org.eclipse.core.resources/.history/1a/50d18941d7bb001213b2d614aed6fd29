@@ -1,9 +1,0 @@
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-
-
-public interface Search<E> {	
-		public LinkedList<E> findPath(E initialNodeObj, Comparator<AsearchNode<E>> comp);
-}

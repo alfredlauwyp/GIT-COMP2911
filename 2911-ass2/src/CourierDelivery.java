@@ -2,8 +2,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Comparator;
 import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.LinkedList;
 
 public class CourierDelivery
 {
@@ -12,7 +10,7 @@ public class CourierDelivery
 		try
 	    {
 			Scanner userInput = new Scanner(new FileReader(args[0]));
-			graph = new AdjListGraph<JobPoint>();
+			graph = new AdjListGraph<DualPoint>();
 			
 			JobPoint initialJobPoint = new JobPoint(0, 0, 0, 0);
 			graph.addNode(initialJobPoint);
@@ -22,29 +20,24 @@ public class CourierDelivery
 				String input[] = userInput.nextLine().split(" ");
 				int fromX = Integer.parseInt(input[COODINATE_FROM_X]);
 				int fromY = Integer.parseInt(input[COODINATE_FROM_Y]);
-				int toX = Integer.parseInt(input[COODINATE_TO_X]);
-				int toY = Integer.parseInt(input[COODINATE_TO_Y]);
+				int toX =	Integer.parseInt(input[COODINATE_TO_X]);
+				int toY = 	Integer.parseInt(input[COODINATE_TO_Y]);
 				graph.addNode(new JobPoint(fromX, fromY, toX, toY));
 			}
 			userInput.close();
 			graph.connectAllNodes();
 			
-			Comparator<AsearchNode<JobPoint>> comparator = new Comparator<AsearchNode<JobPoint>>() {
+			Comparator<AsearchNode> comparator = new Comparator<AsearchNode>() {
 			    public int compare(AsearchNode e1, AsearchNode e2) { 
-			    	if (e1.getDistanceTravelled() > e2.getDistanceTravelled()) return 1;
-			    	if (e1.getDistanceTravelled() < e2.getDistanceTravelled()) return -1;
+			    	if (e1.getExternalDistanceTravelled() > e2.getExternalDistanceTravelled()) return 1;
+			    	if (e1.getExternalDistanceTravelled() < e2.getExternalDistanceTravelled()) return -1;
 			    	else return 0;
 			    }
 			};
 			Asearch asearch = new Asearch(graph);
-			LinkedList<JobPoint> path = asearch.findPath(initialJobPoint, comparator);
-			speak(path.size() + " nodes explored\n");
-			JobPoint initial = path.get(0);
-			for (int i = 1; i < path.size(); i++)
-			{
-				speakln("Move from " + path.get(i - 1).getToX() + " " + path.get(i - 1).getToY() + " to " + path.get(i).getToX() + " " + path.get(i).getToY());
-				speakln("Carry from " + path.get(i - 1).getToX() + " " + path.get(i - 1).getToY() + " to " + path.get(i).getToX() + " " + path.get(i).getToY());
-			}
+			//PrintGraph print = new PrintGraph(graph);
+			speak("Thinking...");
+			speak(asearch.findPath(initialJobPoint, comparator));			
 			
 	    }
 	    catch (FileNotFoundException e)
@@ -71,7 +64,7 @@ public class CourierDelivery
 		}
 	}
 	
-	static AdjListGraph<JobPoint> graph = new AdjListGraph<JobPoint>();
+	static AdjListGraph<DualPoint> graph = new AdjListGraph<DualPoint>();
 	private static final int COODINATE_FROM_X = 1;
 	private static final int COODINATE_FROM_Y = 2;
 	private static final int COODINATE_TO_X = 4;

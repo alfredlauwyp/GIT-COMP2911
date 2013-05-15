@@ -1,7 +1,0 @@
-public interface SearchNode<E> {
-	
-	public boolean isConnected();
-	public void setConnected(boolean connection);
-	public boolean equals(Object nodeObj);
-	public E getNodeObj();
-}

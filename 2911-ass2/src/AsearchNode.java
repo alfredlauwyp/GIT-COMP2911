@@ -1,31 +1,40 @@
 import java.util.LinkedList;
 
-public class AsearchNode<E> implements SearchNode<E> {
+public class AsearchNode {
 
-	public AsearchNode(E nodeObj, int distanceTravelled)
+	public AsearchNode(DualPoint jobNode, int externalDistance)
 	{
-		this.nodeObj = nodeObj;
-		this.distanceTravelled = distanceTravelled;
-		this.visited = new LinkedList<AsearchNode<E>>();
+		this.nodeObj = jobNode;
+		this.externalDistanceTravelled = externalDistance;
+		this.visited = new LinkedList<AsearchNode>();
 	}
 	
-	public boolean equals(Object nodeObj)
+	public boolean equals(Object obj)
 	{
-		if (nodeObj == this.nodeObj)
+		boolean result = false;
+		
+		if (obj == this)
 		{
-			return true;
+			result =  true;
 		}
-		return false;
+		else if (obj.getClass() == AsearchNode.class)
+		{
+			if (this.getNodeObj().equals(((AsearchNode)obj).getNodeObj()))
+			{
+				result = true;
+			}
+		}
+		return result;
 	}
 	
-	public E getNodeObj()
+	public DualPoint getNodeObj()
 	{
 		return this.nodeObj;
 	}
 	
-	public void addVisited(AsearchNode<E> newVisited)
+	public void addVisited(AsearchNode newVisited)
 	{
-		visited.add(newVisited);
+		visited.addLast(newVisited);
 	}
 	
 	public int getNumNodesVisited()
@@ -33,9 +42,9 @@ public class AsearchNode<E> implements SearchNode<E> {
 		return visited.size();
 	}
 	
-	public boolean hasVisited(E otherNode)
+	public boolean hasVisited(DualPoint otherNode)
 	{
-		for (AsearchNode<E> node : visited)
+		for (AsearchNode node : visited)
 		{
 			if (node.getNodeObj().equals(otherNode))
 			{
@@ -46,33 +55,49 @@ public class AsearchNode<E> implements SearchNode<E> {
 		return false;
 	}
 	
-	public LinkedList<AsearchNode<E>> getNodesVisited()
+	public LinkedList<AsearchNode> getNodesVisited()
 	{
-		LinkedList<AsearchNode<E>> path = new LinkedList<AsearchNode<E>>();
-		for (AsearchNode<E> obj : visited)
+		LinkedList<AsearchNode> path = new LinkedList<AsearchNode>();
+		for (AsearchNode obj : visited)
 		{
 			path.add(obj);
 		}
 		return path;
 	}
 	
-	public LinkedList<E> getNodeObjsVisited()
+	public LinkedList<AsearchNode> getNodeObjsVisited()
 	{
-		LinkedList<E> path = new LinkedList<E>();
-		for (AsearchNode<E> obj : visited)
+		LinkedList<AsearchNode> path = new LinkedList<AsearchNode>();
+		for (AsearchNode obj : visited)
 		{
-			path.add(obj.getNodeObj());
+			path.add(obj);
 		}
 		return path;
 	}
 	
-	public int getDistanceTravelled()
+	public String toString()
 	{
-		return this.distanceTravelled;
+		return this.getNodeObj().toString() + "{"+this.getExternalDistanceTravelled()+"}";
+	}
+	
+	public int getExternalDistanceTravelled()
+	{
+		return this.externalDistanceTravelled;
+	}
+	
+	public int getTotalDistanceTravelled()
+	{
+		int internalDistanceTravelled = 0;
+		for (AsearchNode eachNode : visited)
+		{
+			internalDistanceTravelled += eachNode.getNodeObj().getInternalDistance();
+		}
+		
+		return this.externalDistanceTravelled + internalDistanceTravelled;
 	}
 
-	private LinkedList<AsearchNode<E>> visited;
-	private E nodeObj;
-	private int distanceTravelled;
+	private LinkedList<AsearchNode> visited;
+	private DualPoint nodeObj;
+	private int externalDistanceTravelled;
 	
 }

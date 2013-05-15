@@ -1,7 +1,0 @@
-public class Tester {
-
-	public void main(String args[])
-	{
-		JobPoint = new JobPoint(1,2,3,4);
-	}
-}

@@ -29,7 +29,7 @@ public class AdjListGraph<E> implements Graph<E> {
 			}
 		}
 	}
-
+	
 	@Override
 	public void removeNode(E e) {
 		for (ArrayList<E> v : nodes)
