@@ -1,0 +1,23 @@
+/**
+ * DualPoint interface.
+ * 
+ * Provides the interface for a "node" that consists of 
+ *  two points - a point "from" and a point "to". This 
+ *  interfaces allows access to these two pairs of points, 
+ *  as well as providing access to the distance between these
+ *  two points, and the distance between "to" of one point, to
+ *  the "from" of a second point
+ * 
+ * @author	Hayden Charles Smith, z3418003
+ * 			Last modified: 15th May 2013
+ */
+
+public interface DualPoint
+{
+	public int getInternalDistance();
+	public int getExternalDistanceTo(DualPoint pointTo);
+	public int getFromX();
+	public int getFromY();
+	public int getToX();
+	public int getToY();	
+}

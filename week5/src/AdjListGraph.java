@@ -131,9 +131,17 @@ public class AdjListGraph<E> implements Graph<E> {
 		return totalEdges;
 	}
 	
-	public ArrayList<ArrayList<E>> getNodes()
+	/**
+	 * Return an array list of all nodes in the graph
+	 * @return ArrayList of all nodes in the graph
+	 */
+	public ArrayList<E> getNodes()
 	{
-		return new ArrayList<ArrayList<E>>(nodes);
+		ArrayList<E> allNodes = new ArrayList<E>();
+		for (ArrayList<E> nodeLists : this.nodes)
+		{
+			
+		}
 	}
 	
 	private ArrayList<ArrayList<E>> nodes;

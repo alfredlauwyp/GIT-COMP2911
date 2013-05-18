@@ -1,0 +1,20 @@
+
+public class Comparator<E> {
+	
+	public Comparator(int minimalDistance)
+	{
+		 MinimalEdgeHeuristic<E> = new MinimalEdgeHeuristic<E>();
+		 this.minimalDistance = minimalDistance;
+	}
+	public int compare(E e1, E e2)
+	{ 
+		if (e1.getExternalDistanceTravelled() + heuristic.getEstimate(e1, minimalDistance)
+	     > e2.getExternalDistanceTravelled() + heuristic.getEstimate(e2, minimalDistance)) return 1;
+	    if (e1.getExternalDistanceTravelled() + heuristic.getEstimate(e1, minimalDistance)
+		 < e2.getExternalDistanceTravelled() + heuristic.getEstimate(e2, minimalDistance)) return -1;
+	    else return 0;
+	}
+	
+	private MinimalEdgeHeuristic<E> heuristic;
+	private int minimalDistance;
+}

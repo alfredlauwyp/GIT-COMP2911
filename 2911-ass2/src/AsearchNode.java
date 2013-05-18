@@ -1,50 +1,69 @@
 import java.util.LinkedList;
 
-public class AsearchNode {
+/**
+ * A* Search Node.
+ * 
+ * Acts as a node that operates in an A* search. This stores
+ * 	a DualPoint object, and acts as a state space by storing
+ * 	all previous nodes that have been visited upon reaching the
+ *  current AsearchNode.
+ * 
+ * @author	Hayden Charles Smith, z3418003
+ * 			Last modified: 15th May 2013
+ */
+public class AsearchNode<E> implements SearchNode<E> {
 
-	public AsearchNode(DualPoint jobNode, int externalDistance)
+	/**
+	 * Creates an AsearchNode object
+	 * @param jobNode
+	 * @param externalDistance
+	 */
+	public AsearchNode(E jobNode, int externalDistance)
 	{
 		this.nodeObj = jobNode;
 		this.externalDistanceTravelled = externalDistance;
-		this.visited = new LinkedList<AsearchNode>();
+		this.visited = new LinkedList<SearchNode<E>>();
 	}
 	
-	public boolean equals(Object obj)
-	{
-		boolean result = false;
-		
-		if (obj == this)
-		{
-			result =  true;
-		}
-		else if (obj.getClass() == AsearchNode.class)
-		{
-			if (this.getNodeObj().equals(((AsearchNode)obj).getNodeObj()))
-			{
-				result = true;
-			}
-		}
-		return result;
-	}
-	
-	public DualPoint getNodeObj()
+	/**
+	 * Returns the DualPoint object contained within the AsearchNode
+	 * @return The DualPoint object contained within the AsearchNode
+	 */
+	public E getNodeObj()
 	{
 		return this.nodeObj;
 	}
 	
-	public void addVisited(AsearchNode newVisited)
+	/**
+	 * Adds an AsearchNode to the list of previously visited AsearchNode's
+	 *  contained within this node
+	 * @param newVisited AsearchNode to add to the visited list
+	 */
+	public void addVisited(SearchNode<E> newVisited)
 	{
 		visited.addLast(newVisited);
 	}
 	
+	/**
+	 * Get the number of AsearchNodes that have been visited
+	 * @return number of AsearchNodes previously visited
+	 */
 	public int getNumNodesVisited()
 	{
 		return visited.size();
 	}
 	
-	public boolean hasVisited(DualPoint otherNode)
+	/**
+	 * Given a DualPoint, determines whether the current state
+	 *  space has visited the node before
+	 * @param otherNode DualPoint object to check if has been 
+	 *  visited
+	 * @return Whether the DualPoint object has been visited by
+	 *  the current state space
+	 */
+	public boolean hasVisitedObj(E otherNode)
 	{
-		for (AsearchNode node : visited)
+		for (SearchNode<E> node : visited)
 		{
 			if (node.getNodeObj().equals(otherNode))
 			{
@@ -55,49 +74,113 @@ public class AsearchNode {
 		return false;
 	}
 	
-	public LinkedList<AsearchNode> getNodesVisited()
+	/**
+	 * Returns a list of AsearchNodes that have been visited
+	 *  previously by the current node.
+	 * @return LinkedList of AsearchNodes that have been visited
+	 */
+	public LinkedList<SearchNode<E>> getNodesVisited()
 	{
-		LinkedList<AsearchNode> path = new LinkedList<AsearchNode>();
-		for (AsearchNode obj : visited)
+		LinkedList<SearchNode<E>> path = new LinkedList<SearchNode<E>>();
+		for (SearchNode<E> obj : visited)
 		{
 			path.add(obj);
 		}
 		return path;
 	}
 	
-	public LinkedList<AsearchNode> getNodeObjsVisited()
+	/**
+	 * Returns a list of AsearchNodes that have been visited
+	 *  previously by the current node.
+	 * @return LinkedList of AsearchNodes that have been visited
+	 */
+	public LinkedList<E> getNodeObjsVisited()
 	{
-		LinkedList<AsearchNode> path = new LinkedList<AsearchNode>();
-		for (AsearchNode obj : visited)
+		LinkedList<E> path = new LinkedList<E>();
+		for (SearchNode<E> obj : visited)
 		{
-			path.add(obj);
+			path.add(obj.getNodeObj());
 		}
 		return path;
 	}
-	
-	public String toString()
-	{
-		return this.getNodeObj().toString() + "{"+this.getExternalDistanceTravelled()+"}";
-	}
-	
+		
+	/**
+	 * Get the cumulative external distance the current state
+	 *  space has travelled in order to reach it's current
+	 *  location
+	 * @return Cumulative external distance travelled to current 
+	 *  state
+	 */
 	public int getExternalDistanceTravelled()
 	{
 		return this.externalDistanceTravelled;
 	}
 	
-	public int getTotalDistanceTravelled()
+	public int getEstimatedDistanceRemaining()
 	{
-		int internalDistanceTravelled = 0;
-		for (AsearchNode eachNode : visited)
+		return this.estimatedDistanceRemaining;
+	}
+	
+	public void setEstimatedDistanceRemaining(int val)
+	{
+		this.estimatedDistanceRemaining = val;
+	}
+	
+	public int getHeuristicEstimate()
+	{
+		//return getExternalDistanceTravelled();
+		return this.estimatedDistanceRemaining + this.externalDistanceTravelled;
+	}
+	
+	public String toString()
+	{
+		return nodeObj.toString() + " === " + getNodeObjsVisited();
+	}
+	
+	public boolean isSameContents(SearchNode<E> node)
+	{
+		boolean result = true;
+		if (node.getNodeObj() != this.getNodeObj())
 		{
-			internalDistanceTravelled += eachNode.getNodeObj().getInternalDistance();
+			//System.out.println(node.getNodeObj() + " != " + this.getNodeObj());
+			result = false;
+		}
+		else
+		{
+			//System.out.println("SAME");
 		}
 		
-		return this.externalDistanceTravelled + internalDistanceTravelled;
+		LinkedList<E> list1 = node.getNodeObjsVisited();
+		LinkedList<E> list2 = this.getNodeObjsVisited();
+		//System.out.println();
+		//System.out.println("1:" + list1);
+		//System.out.println("2:" + list2);
+		for (E item : list1)
+		{
+			if (!list2.contains(item))
+			{
+				//System.out.println("!list2.contains(item)");
+				result = false;
+			}
+		}
+		for (E item : list2)
+		{
+			if (!list1.contains(item))
+			{
+				//System.out.println("!list1.contains(item)");
+				result = false;
+			}
+		}	
+		if (result)
+		{
+			System.out.println("SAME!!!");
+		}
+		return result;
 	}
 
-	private LinkedList<AsearchNode> visited;
-	private DualPoint nodeObj;
+	private LinkedList<SearchNode<E>> visited;
+	private E nodeObj;
 	private int externalDistanceTravelled;
+	private int estimatedDistanceRemaining;
 	
 }

@@ -1,0 +1,74 @@
+import java.util.ArrayList;
+
+/**
+ * Graph interface.
+ * 
+ * Provides the interface for a graph implementation that provides
+ *  functionality that includes the addition/deletion of nodes
+ *  and the edges associated with those nodes. This interface also
+ *  provides functionality that includes whether an object appears in
+ *  the graph, if two objects have an edge between them, and providing
+ *  the number of vertices/edges in the graph.
+ * 
+ * @author	Hayden Charles Smith, z3418003
+ * 			Last modified: 15th May 2013
+ */
+/**
+ * Graph interface
+ * @author hsmi665
+ *
+ */
+public interface DirectedGraph<E> {
+	
+	/**
+	 * Adds a node to the graph
+	 * @param e Object to add
+	 */
+	public void addNode(E e);
+	
+	/**
+	 * Removes a node from the graph
+	 * @param e Object to remove
+	 */
+	public void removeNode(E e);
+	
+	/**
+	 * Adds an edge between two nodes
+	 * @param from Directed edge FROM this point
+	 * @param to Directed edge TO this point
+	 */
+	public void addEdge(E from, E to);
+	
+	/**
+	 * Determines if two vertices are connected
+	 * @param from Point to test connection FROM
+	 * @param to Point to test connection TO
+	 * @return Whether it is connected
+	 */
+	public boolean isConnected(E from, E to);
+	
+	/**
+	 * Removes an edge from a graph
+	 * @param from Origin of edge that is removed
+	 * @param to Destination of edge that is removed
+	 */
+	public void removeEdge(E from, E to);
+	
+	/**
+	 * Determines whether vertices is in a graph
+	 * @param e
+	 * @return whether a vertice is in a graph
+	 */
+	public boolean isInGraph(E e);
+	
+	/**
+	 * 
+	 * @return the nodes in a graph as an array
+	 */ 
+	public ArrayList<ArrayList<E>> getNodes();
+	
+	ArrayList<E> getNeighbours(E e);
+	int getNumVertices();
+	int getNumEdges();
+	
+}

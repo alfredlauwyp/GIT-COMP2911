@@ -1,32 +1,54 @@
 import java.util.LinkedList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.lang.StringBuffer;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
- * Implements Breadth First Search Algorithm
- * @author Hayden Smith
- *
+ * A* Search Class.
+ * 
+ * Allows for searching of a given Graph with
+ *  an A* search - by using a comparator in order
+ *  to give weighting to particular state spaces over
+ *  one another.
+ *  
+ * Please note this A* Search is based on the 
+ *  DualNode class
+ * 
+ * @author	Hayden Charles Smith, z3418003
+ * 			Last modified: 15th May 2013
  */
 public class Asearch {
 
-	public Asearch(Graph<DualPoint> graph)
+	/**
+	 * Construct an Asearch Object
+	 * @param graph Graph containing DualPoint's that need to 
+	 *  be searched
+	 */
+	public Asearch(DirectedGraph<DualPoint> graph)
 	{
 		this.graph = graph;
+		heuristic = new MinimalEdgeHeuristic(graph);
 	}
 	
-	public String findPath(DualPoint initialPoint, Comparator<AsearchNode> comp)
+	/**
+	 * This method finds a path from the initial DualPoint passed
+	 *  in to a final DualPoint, while passing through every other
+	 *  DualPoint.
+	 * @param initialPoint DualPoint in which to start from
+	 * @param comp Comparator which orders items added to PriorityQueue
+	 * @return LinkedList of DualPoint's that make up the path 
+	 */
+	public LinkedList<DualPoint> findMinimalSpanningPath(DualPoint initialPoint, Comparator<SearchNode<DualPoint>> comp)
 	{
 		// Establish path to take
-		LinkedList<AsearchNode> path = new LinkedList<AsearchNode>();
-		StringBuffer result = new StringBuffer();
-		PriorityQueue<AsearchNode> priorityQueue = new PriorityQueue<AsearchNode>(INITIAL_QUEUE_CAPACITY, comp);
+		LinkedList<DualPoint> result = new LinkedList<DualPoint>();
+		PriorityQueue<SearchNode<DualPoint>> priorityQueue = new PriorityQueue<SearchNode<DualPoint>>(INITIAL_QUEUE_CAPACITY, comp);
 		
-		if (graph.getNumVertices() > 0)
+		if (graph.getNumNodes() > 0)
 		{
-			AsearchNode current = new AsearchNode(initialPoint, 0);
+			int c = 0;
+			SearchNode<DualPoint> current = new AsearchNode<DualPoint>(initialPoint, 0);
+			
 			priorityQueue.add(current);
 			
 			boolean visitedAll = false;
@@ -35,76 +57,58 @@ public class Asearch {
 			
 			while (!priorityQueue.isEmpty() && !visitedAll)
 			{
+				//System.out.println("Closed List: " + closedList);
 				current = priorityQueue.poll();
-				debug("Current: " + current.getNodeObj().toString());
 				
-				current.addVisited(current);
-				debug("Current (Visited): " + current.getNodesVisited().toString());
-				neighbours = graph.getNeighbours(current.getNodeObj());
-			    for(DualPoint currentNeighbour : neighbours)
-			    {
-			    	debug("Neighbour: "+currentNeighbour+" (not visited: "+(!current.hasVisited(currentNeighbour))+")");
-			    	if (!current.hasVisited(currentNeighbour))
-			    	{
-			    		int distanceDifference = current.getNodeObj().getExternalDistanceTo(currentNeighbour);
-			    		debug("-- External Distance ("+current+" --> "+currentNeighbour+"): " + distanceDifference);
-			    		
-			    		int travelled = (current.getExternalDistanceTravelled() + distanceDifference);
-			    		debug("-- Cumul Distance ("+current+" --> "+currentNeighbour+"): " + current.getExternalDistanceTravelled());
-			    		debug("-- Total Distance ("+current+" --> "+currentNeighbour+"): " + travelled);
-						AsearchNode nodeToAdd = new AsearchNode(currentNeighbour, travelled);
-			    		
-			    		for(AsearchNode alreadyVisited : current.getNodesVisited())
-			    		{
-			    			nodeToAdd.addVisited(alreadyVisited);
-			    		}
-			    		priorityQueue.add(nodeToAdd);
-			    		printPriorityQueue(priorityQueue);
-			    	}
-			    }
-			    debug("------------------------------------------------------------------");
-			    if (current.getNumNodesVisited() < this.graph.getNumVertices())
+				//System.out.println("SNode: " + current);
+				/*boolean sameState = false;
+				for (SearchNode<DualPoint> node : closedList)
 				{
-					debug("NOT Minimal Spanning Tree!");}
-				else
+					if (node.isSameContents(current))
+					{
+						sameState = true;
+					}
+				}
+				
+				if (!sameState)
+				{*/
+					current.addVisited(current);
+					neighbours = graph.getNeighbours(current.getNodeObj());
+				    for(DualPoint currentNeighbour : neighbours)
+				    {
+				    	if (!current.hasVisitedObj(currentNeighbour))
+				    	{
+					    	int distanceDifference = current.getNodeObj().getExternalDistanceTo(currentNeighbour);
+					    		
+					    	int travelled = (current.getExternalDistanceTravelled() + distanceDifference);
+					    	SearchNode<DualPoint> nodeToAdd = new AsearchNode<DualPoint>(currentNeighbour, travelled);
+					    		
+				    		for(SearchNode<DualPoint> alreadyVisited : current.getNodesVisited())
+				    		{
+				    			nodeToAdd.addVisited(alreadyVisited);
+				    		}
+				    		nodeToAdd.setEstimatedDistanceRemaining(heuristic.getEstimate(nodeToAdd));
+				    		priorityQueue.add(nodeToAdd);
+				    		c++;
+				    	}
+				    /*}
+				    closedList.add(current);*/
+				}
+			    if (current.getNumNodesVisited() >= this.graph.getNumNodes())
 				{
-					debug("Minimal Spanning Tree!");
 					visitedAll = true;
 				}
 			}
-			
-			if(current.getNumNodesVisited() == this.graph.getNumVertices()) {
-				path = current.getNodeObjsVisited();
-				
-				//debug("Final (Visited): " + current.getNodesVisited().toString());
-				result.append(current.getNumNodesVisited() + " nodes explored\n");
-				result.append("cost = " + current.getTotalDistanceTravelled() + "\n");
-				for (int i = 0; i < (path.size() - 1); i++)
-				{
-					result.append("Move from " + path.get(i).getNodeObj().getToX() + " " + path.get(i).getNodeObj().getToY() + " to " + path.get(i + 1).getNodeObj().getFromX() + " " + path.get(i + 1).getNodeObj().getFromY() + "\n");
-					result.append("Carry from " + path.get(i + 1).getNodeObj().getFromX() + " " + path.get(i + 1).getNodeObj().getFromY() + " to " + path.get(i + 1).getNodeObj().getToX() + " " + path.get(i + 1).getNodeObj().getToY() + "\n");
-				}
+			if(current.getNumNodesVisited() == this.graph.getNumNodes()) {
+				result = current.getNodeObjsVisited();
 			}			 
+			System.out.println("Iterations: " + c);
 		}
-		return result.toString();		
-	}
-	
-	/*Debug*/
-	private void debug(String s)
-	{
-		//System.out.println(s);
-	}
-	
-	private void printPriorityQueue(PriorityQueue q)
-	{
-		PriorityQueue<AsearchNode> q2 = new PriorityQueue<AsearchNode>(q);
-		while (q2.size() > 0)
-		{
-			debug("=Queue: " + q2.poll().toString());
-		}
+		return result;		
 	}
 		
-	private Graph<DualPoint> graph;
+	private DirectedGraph<DualPoint> graph;
 	private static final int INITIAL_QUEUE_CAPACITY = 100;
+	private Heuristic<SearchNode<DualPoint>> heuristic;
 
 }
