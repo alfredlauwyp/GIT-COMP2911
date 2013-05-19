@@ -32,7 +32,7 @@ public class MinimalEdgeHeuristic implements Heuristic<SearchNode<DualPoint>> {
 		PriorityQueue<Integer> edgeWeights = new PriorityQueue<Integer>(INITIAL_QUEUE_CAPACITY, highToLow);
 				
 		debug("---------------------------------------------------------------");
-		debug(node + " --> " + node.getNodesVisited());
+		debug(node.toString());
 		for (DualPoint dualPoint : this.graph.getNodes())
 		{
 			debug("\nNode ("+dualPoint+")");
@@ -52,6 +52,7 @@ public class MinimalEdgeHeuristic implements Heuristic<SearchNode<DualPoint>> {
 						neighbourEdgeWeights.add(dualPoint.getExternalDistanceTo(neighbour));
 					}
 				}
+				debug("Size: " + neighbourEdgeWeights.size());
 				if (neighbourEdgeWeights.size() > 0)
 				{
 					int o = neighbourEdgeWeights.poll();
@@ -60,16 +61,21 @@ public class MinimalEdgeHeuristic implements Heuristic<SearchNode<DualPoint>> {
 				}
 			}
 		}
-		edgeWeights.poll();
+		
+		edgeWeights.poll(); // Strip the biggest
 		
 		PriorityQueue<Integer> edgeWeights2 = new PriorityQueue<Integer>(edgeWeights);
 		
 		debug("Edge Size: " + edgeWeights2.size());
-		for (int i = 0; i < edgeWeights2.size(); i++)
+		int i = 0;
+		for (int t = edgeWeights2.size(); i < t; i++)
 		{
 			int oo = edgeWeights2.poll();
 			debug("Edge: " + oo);
 		}
+		
+		
+				
 		for (Integer val : edgeWeights)
 		{
 			sum += val;

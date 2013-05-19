@@ -134,50 +134,142 @@ public class AsearchNode<E> implements SearchNode<E> {
 	
 	public String toString()
 	{
-		return nodeObj.toString() + " === " + getNodeObjsVisited();
+		return nodeObj.toString() + "=>" + getNodeObjsVisited();
 	}
 	
-	public boolean isSameContents(SearchNode<E> node)
+	/*public boolean isSameContents(LinkedList<SearchNode<E>> visited)
 	{
-		boolean result = true;
-		if (node.getNodeObj() != this.getNodeObj())
+		boolean pruned = false;
+		if (visited.size() > 0)
 		{
-			//System.out.println(node.getNodeObj() + " != " + this.getNodeObj());
-			result = false;
+			for (SearchNode<E> discovered : visited)
+			{
+				if (this.getNodeObj() != null && discovered.getNodeObj() != null) {
+					if (this.getNodeObj().equals(discovered.getNodeObj()))
+					{
+						
+						//System.out.println("Same!");
+						
+						boolean same = true;
+						for(E job : this.getNodeObjsVisited())
+						{
+							if(!(discovered.getNodeObjsVisited().contains(job)))
+							{
+								same = false;
+								//System.out.print("discovered ! contain job ...");
+							}
+						}
+						if (same)
+						{
+							/*System.out.println("Node: " + this);
+							System.out.println("Discovered: " + discovered);
+							System.out.println("");
+						}
+						
+						for(E job : discovered.getNodeObjsVisited())
+						{
+							if(!(this.getNodeObjsVisited().contains(job)))
+							{
+								same = false;
+								//System.out.print("this ! contain job ...");
+							}
+						}
+						
+						if(same == true) {
+							//pruned = true;
+						}
+					}
+				}
+			}
+		}
+		return pruned;
+	}*/
+		
+		
+		
+		/*
+		
+		boolean same = true;
+		if (node.getNodeObj() == this.getNodeObj())
+		{			
+			for (E job : node.getNodeObjsVisited())
+			{
+				if (!this.getNodeObjsVisited().contains(job))
+				{
+					same = false;
+				}
+			}
+			for (E job : this.getNodeObjsVisited())
+			{
+				if (!node.getNodeObjsVisited().contains(job))
+				{
+					same = false;
+				}
+			}
 		}
 		else
 		{
-			//System.out.println("SAME");
+			same = false;
 		}
 		
-		LinkedList<E> list1 = node.getNodeObjsVisited();
-		LinkedList<E> list2 = this.getNodeObjsVisited();
-		//System.out.println();
-		//System.out.println("1:" + list1);
-		//System.out.println("2:" + list2);
-		for (E item : list1)
-		{
-			if (!list2.contains(item))
+		if (same) { System.out.println("FUCK"); } else {  } 
+		return same;
+	}
+*/
+	
+	@SuppressWarnings("unchecked")
+	public boolean equals(Object obj)
+	{
+		
+		boolean result = true;
+		SearchNode<E> other;
+		if(obj == this){
+			result =  true;
+		} else if (obj == null){
+			result = false;
+		} else {
+			//System.out.println("");
+			other = (SearchNode<E>)obj;
+			result = false;
+			//System.out.println("1: " + this);
+			//System.out.println("2: " + other);
+			if (this.getNodeObj().equals(other.getNodeObj()))
 			{
-				//System.out.println("!list2.contains(item)");
-				result = false;
+				//System.out.println("Nodes equal: {"+this.getNodeObj()+"}  {"+other.getNodeObj()+"}");
+				LinkedList<E> list1 = this.getNodeObjsVisited();
+				LinkedList<E> list2 = other.getNodeObjsVisited();
+				boolean noConflicts = true;
+				for (E item : list1)
+				{
+					if (!list2.contains(item))
+					{
+						//System.out.println("Triggered");
+						noConflicts = false;
+					}
+				}
+				for (E item : list2)
+				{
+					if (!list1.contains(item))
+					{
+						//System.out.println("Triggered 2");
+						noConflicts = false;
+					}
+				}
+				if (noConflicts)
+				{
+					result = true;
+				}
+				if (result) { System.out.println("Lists the same"); System.out.println(list1); System.out.println(list2); }
 			}
-		}
-		for (E item : list2)
-		{
-			if (!list1.contains(item))
+			else
 			{
-				//System.out.println("!list1.contains(item)");
-				result = false;
+				//System.out.println("NODES NOT EQUAL");
 			}
-		}	
-		if (result)
-		{
-			System.out.println("SAME!!!");
-		}
+			if (result) { System.out.println("FUCK YEAH"); }
+		} 
 		return result;
 	}
-
+	
 	private LinkedList<SearchNode<E>> visited;
 	private E nodeObj;
 	private int externalDistanceTravelled;

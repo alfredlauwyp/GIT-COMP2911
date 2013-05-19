@@ -1,0 +1,53 @@
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+import java.util.Comparator;
+
+public class MinimalEdgeHeuristic implements Heuristic<SearchNode<DualPoint>> {
+	
+	public MinimalEdgeHeuristic(DirectedGraph<DualPoint> graph)
+	{
+		this.graph = graph;
+	}
+	
+	public int getEstimate(SearchNode<DualPoint> node)
+	{
+		Comparator<Integer> lowToHigh = new Comparator<Integer>()
+		{
+			public int compare(Integer a, Integer b)
+			{
+				return (a - b);
+			}
+		};
+		
+		Comparator<Integer> highToLow = new Comparator<Integer>()
+		{
+			public int compare(Integer a, Integer b)
+			{
+				return (b - a);
+			}
+		};
+				
+		PriorityQueue<Integer> edgeWeights = new PriorityQueue<Integer>(INITIAL_QUEUE_CAPACITY, lowToHigh);
+				
+		for (DualPoint dualPoint : this.graph.getNodes())
+		{
+			if (!node.hasVisitedObj(dualPoint))
+			{
+				ArrayList<DualPoint> neighbours = new ArrayList<DualPoint>(graph.getNeighbours(dualPoint));
+				PriorityQueue<Integer> neighbourEdgeWeights = new PriorityQueue<Integer>(INITIAL_QUEUE_CAPACITY, lowToHigh);
+				for (DualPoint neighbour : neighbours)
+				{
+					if (!node.hasVisitedObj(neighbour) && node.getNodeObj() != neighbour)
+					{
+						neighbourEdgeWeights.add(dualPoint.getExternalDistanceTo(neighbour));
+					}
+				}
+				edgeWeights.add(neighbourEdgeWeights.poll());
+			}
+		}
+		
+	}
+	
+	private DirectedGraph<DualPoint> graph;
+	private final int INITIAL_QUEUE_CAPACITY = 100;
+}

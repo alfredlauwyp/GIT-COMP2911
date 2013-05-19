@@ -68,6 +68,6 @@ public interface SearchNode<E> {
 	
 	public int getHeuristicEstimate();
 	
-	public boolean isSameContents(SearchNode<E> node);
+	//public boolean isSameContents(LinkedList<SearchNode<E>> visited);
 	
 }

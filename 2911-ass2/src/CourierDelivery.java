@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Scanner;
 import java.lang.StringBuffer;
 import java.util.LinkedList;
+import java.text.DecimalFormat;
 
 /**
  * Courier Delivery Class.
@@ -29,7 +30,12 @@ public class CourierDelivery
 	 */
 	public static void main(String[] args)
 	{
-		long start = System.currentTimeMillis();
+
+        //Getting the runtime reference from system
+        Runtime runtime = Runtime.getRuntime();
+        runtime.gc();
+        
+        double miliStart = System.currentTimeMillis();
 		try
 	    {
 			Scanner userInput 					= new Scanner(new FileReader(args[0]));			
@@ -71,8 +77,16 @@ public class CourierDelivery
 			speak("Please add a single parameter that is an input file");
 		}
 		
-		System.out.println(((System.currentTimeMillis() - start)) + " mill seconds\n");
+		speak("\nTime: " + (System.currentTimeMillis() - miliStart) / 1000 + "s\n");
+		
+        double one = (new Double(runtime.totalMemory() - runtime.freeMemory()).doubleValue());
+        double two = ((new Double(runtime.maxMemory()).doubleValue()));
+        double mix = ((one / two) * 100);
+        speak("Memory Usage: " + mix + "% of " + runtime.maxMemory());
+    
+		
 	}
+
 	
 	/**
 	 * Given a list of DualPoints, print out the number of DualPoints in this path,
@@ -92,17 +106,17 @@ public class CourierDelivery
 		{
 			DualPoint nodeLeft = path.get(i);
 			DualPoint nodeRight = path.get(i + 1);
-			nodePrintouts.append("Move from " + nodeLeft.getToX() + " " + nodeLeft.getToY() + " to " + nodeRight.getFromX() + " " + nodeRight.getFromY() + "\n");
-			if (!nodeRight.isSamePoint())
+			if (nodeLeft.getExternalDistanceTo(nodeRight) > 0)
 			{
-				nodePrintouts.append("Carry from " + nodeRight.getFromX() + " " + nodeRight.getFromY() + " to " + nodeRight.getToX() + " " + nodeRight.getToY() + "\n");
+				nodePrintouts.append("Move from " + nodeLeft.getToX() + " " + nodeLeft.getToY() + " to " + nodeRight.getFromX() + " " + nodeRight.getFromY() + "\n");
 			}
+			nodePrintouts.append("Carry from " + nodeRight.getFromX() + " " + nodeRight.getFromY() + " to " + nodeRight.getToX() + " " + nodeRight.getToY() + "\n");
 			totalDistance += nodeLeft.getInternalDistance();
 			totalDistance += nodeLeft.getExternalDistanceTo(nodeRight);
 		}
-		totalDistance += path.get(i).getInternalDistance();
+		//totalDistance += path.get(i).getInternalDistance();
 		
-		printResult.append(path.size() - 1 + " nodes explored\n");
+		printResult.append(path.size() + " nodes explored\n");
 		printResult.append("cost = " + totalDistance + "\n");
 		printResult.append(nodePrintouts.toString());
 		return printResult.toString();

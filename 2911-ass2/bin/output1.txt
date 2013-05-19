@@ -1,0 +1,26 @@
+Iterations: 238
+11 nodes explored
+cost = 3031
+Move from 0 0 to 0 1
+Carry from 0 1 to 1 1
+Move from 1 1 to 1 1
+Carry from 1 1 to 3 3
+Move from 3 3 to 7 4
+Carry from 7 4 to 9 4
+Move from 9 4 to 9 6
+Carry from 9 6 to 5 8
+Move from 5 8 to 5 5
+Carry from 5 5 to 15 5
+Move from 15 5 to 15 6
+Move from 15 6 to 15 6
+Carry from 15 6 to 15 10
+Move from 15 10 to 20 20
+Carry from 20 20 to 50 204
+Move from 50 204 to 100 200
+Carry from 100 200 to 1000 1000
+Move from 1000 1000 to 1000 1000
+Carry from 1000 1000 to 1000 2000
+Move from 1000 2000 to 1000 2001
+Carry from 1000 2001 to 1005 2004
+695 mill seconds
+
