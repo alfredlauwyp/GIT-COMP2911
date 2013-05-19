@@ -12,6 +12,7 @@ public class Solver {
 		Heuristic heuristic = new CourierDeliveryHeuristic(jobs);
 		AStar search = new CourierDeliveryAStar(heuristic, jobs);
 		System.out.println(search.findSolution());
+		System.out.println("Prunes: " + Solver.prunes);
 	}
 	
 	private static void readData(String[] args) {
@@ -40,4 +41,5 @@ public class Solver {
 	}
 	
 	private static CourierDeliveryGraph graph;
+	public static int prunes;
 }

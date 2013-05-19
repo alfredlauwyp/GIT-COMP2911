@@ -8,7 +8,7 @@ import java.util.ArrayList;
  *  
  * 
  * @author	Hayden Charles Smith, z3418003
- * 			Last modified: 15th May 2013
+ * 			Last modified: 19th May 2013
  */
 public class AdjacencyListGraph<E> implements DirectedGraph<E>
 {
@@ -40,22 +40,27 @@ public class AdjacencyListGraph<E> implements DirectedGraph<E>
 	 */
 	public void removeNode(E e)
 	{
+		boolean finished = false;
 		for (ArrayList<E> nodeList : nodes)
 		{
 			if (getNode(nodeList).equals(e))
 			{
-				nodes.remove(nodeList);
-				break;
+				if (!finished)
+				{
+					nodes.remove(nodeList);
+				}
+				finished = true;
 			}
 		}
+		finished = false;
 		for (ArrayList<E> nodeList : nodes)
 		{
 			for (E item : nodeList)
 			{
-				if (item.equals(e))
+				if (item.equals(e) && !finished)
 				{
 					nodeList.remove(item);
-					break;
+					finished = true;
 				}
 			}
 		}
@@ -196,17 +201,6 @@ public class AdjacencyListGraph<E> implements DirectedGraph<E>
 	}
 	
 	/**
-	 * Given a list of edges (including the node) for
-	 *  a particular node, returns the node object
-	 * @param nodeItems ArrayList of edges (includes node at position 0)
-	 * @return Node within that list
-	 */
-	private E getNode(ArrayList<E> nodeItems)
-	{
-		return nodeItems.get(NODE_INDEX);
-	}
-	
-	/**
 	 * Return an array list of all nodes in the graph
 	 * @return ArrayList of all nodes in the graph
 	 */
@@ -218,6 +212,17 @@ public class AdjacencyListGraph<E> implements DirectedGraph<E>
 			allNodes.add(getNode(nodeList));
 		}
 		return allNodes;
+	}
+	
+	/**
+	 * Given a list of edges (including the node) for
+	 *  a particular node, returns the node object
+	 * @param nodeItems ArrayList of edges (includes node at position 0)
+	 * @return Node within that list
+	 */
+	private E getNode(ArrayList<E> nodeItems)
+	{
+		return nodeItems.get(NODE_INDEX);
 	}
 	
 	private ArrayList<ArrayList<E>> nodes;

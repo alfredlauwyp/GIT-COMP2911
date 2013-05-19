@@ -53,8 +53,8 @@ public class CourierDeliveryHeuristic implements Heuristic {
 		}
 		hValue = paths + jobs;
 		//System.out.println("contribution from jobs is " + jobs + ", total from paths is " + paths);
-		return hValue;
-		//return 0;
+		//return hValue;
+		return 0;
 	}
 	
 	private int[] shortestPaths;

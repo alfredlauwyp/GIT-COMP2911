@@ -11,7 +11,7 @@ import java.util.ArrayList;
  *  the number of vertices/edges in the graph.
  * 
  * @author	Hayden Charles Smith, z3418003
- * 			Last modified: 15th May 2013
+ * 			Last modified: 19th May 2013
  */
 public interface DirectedGraph<E> {
 	
