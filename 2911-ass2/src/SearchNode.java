@@ -1,16 +1,15 @@
 import java.util.LinkedList;
 
 /**
- * SearchNode
- * 
  * SearchNode is a node used when completing
  *  searches (e.g. BFS, A* Search). Each node
- *  can be viewed as a state space.
+ *  can be viewed as a state space.<br /><br />
  *  
  * A single object is contained within each node.
  * 
- * @author	Hayden Charles Smith, z3418003
+ * @author	Hayden Charles Smith, z3418003<br />
  * 			Last modified: 19th May 2013
+ * 
  * @param <E> Object held within this node
  */
 public interface SearchNode<E>
@@ -38,7 +37,7 @@ public interface SearchNode<E>
 	/**
 	 * Given an Object, determines whether the current state
 	 *  space has visited the object before
-	 * @param otherNode Object to check if has been visited
+	 * @param obj Object to check if has been visited
 	 * @return Whether the given object has been visited by
 	 *  the current SearchNode (state space)
 	 */

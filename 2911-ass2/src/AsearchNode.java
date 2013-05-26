@@ -1,24 +1,23 @@
 import java.util.LinkedList;
 
 /**
- * A* Search Node.
- * 
  * Acts as a node that operates in an A* search. This acts
  *  as a state space by storing all previous nodes that
- *  have been visited upon reaching the current AsearchNode.
+ *  have been visited upon reaching the current AsearchNode.<br /><br />
  *  
  *  A single object is contained within each node.
  * 
- * @author	Hayden Charles Smith, z3418003
+ * @author	Hayden Charles Smith, z3418003<br />
  * 			Last modified: 19th May 2013
+ * 
  * @param <E> Object held within this node
  */
 public class AsearchNode<E> implements SearchNode<E> {
 
 	/**
 	 * Creates an AsearchNode object
-	 * @param jobNode Object of type E contained within the AsearchNode
-	 * @param externalDistance External distance travelled to get
+	 * @param nodeObj Object of type E contained within the AsearchNode
+	 * @param externalDistance External distance traversed to get
 	 *  to this state
 	 */
 	public AsearchNode(E nodeObj, int externalDistance)
@@ -59,9 +58,8 @@ public class AsearchNode<E> implements SearchNode<E> {
 	/**
 	 * Given an object of type E, determines whether the current state
 	 *  space has visited the node before
-	 * @param otherNode DualPoint object to check if has been 
-	 *  visited
-	 * @return Whether the DualPoint object has been visited by
+	 * @param otherNode Object of type E to check if has been visited
+	 * @return Whether the Object of type E object has been visited by
 	 *  the current state space
 	 */
 	public boolean hasVisitedObj(E otherNode)

@@ -18,16 +18,126 @@
 		<item value="400" key="height"/>
 		<item value="600" key="width"/>
 	</section>
-	<section name="quick_assist_proposal_size">
-	</section>
-	<section name="NewClassWizardPage">
-		<item value="false" key="create_constructor"/>
-		<item value="false" key="create_main"/>
-		<item value="true" key="create_unimplemented"/>
-	</section>
 	<section name="org.eclipse.ltk.ui.refactoring.settings">
 		<item value="1" key="updateSimilarElementsMatchStrategy"/>
 		<item value="false" key="updateTextualMatches"/>
-		<item value="false" key="updateSimilarElements"/>
+		<item value="true" key="updateSimilarElements"/>
+	</section>
+	<section name="NewClassWizardPage">
+		<item value="false" key="create_constructor"/>
+		<item value="true" key="create_unimplemented"/>
+		<item value="false" key="create_main"/>
+	</section>
+	<section name="quick_assist_proposal_size">
+	</section>
+	<section name="javadoc">
+		<item value="false" key="nodeprecatedlist"/>
+		<item value="false" key="notree"/>
+		<item value="true" key="splitindex"/>
+		<item value="C:\Program Files\Java\jdk1.7.0_21\bin\javadoc.exe" key="javadoc_command_history"/>
+		<item value="true" key="use"/>
+		<item value="false" key="nonavbar"/>
+		<item value="public" key="access"/>
+		<item value="true" key="version"/>
+		<item value="false" key="nodeprecated"/>
+		<item value="F:\Dropbox\UNSW\Java Development\2911-proj\doc" key="destdir"/>
+		<item value="true" key="author"/>
+		<item value="" key="docletname"/>
+		<item value="1.7" key="source"/>
+		<item value="JavaDoc-Ass2" key="doctitle"/>
+		<item value="false" key="openinbrowser"/>
+		<item value="false" key="noindex"/>
+		<item value="" key="docletpath"/>
+		<item value="F:\Dropbox\UNSW\Java Development\2911-proj\javadoc.xml" key="antpath"/>
+		<item value="true" key="fromStandard"/>
+		<section name="projects">
+			<section name="2911-proj">
+				<item value="F:\Dropbox\UNSW\Java Development\2911-proj\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\2911-proj\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="3411-hw3">
+				<item value="F:\Dropbox\UNSW\Java Development\3411-hw3\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\3411-hw3\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week3">
+				<item value="F:\Dropbox\UNSW\Java Development\week3\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week3\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week10_proper">
+				<item value="F:\Dropbox\UNSW\Java Development\week10_proper\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week10_proper\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="2911-ass2">
+				<item value="F:\Dropbox\UNSW\Java Development\2911-ass2\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\2911-ass2\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="2911-ass1">
+				<item value="F:\Dropbox\UNSW\Java Development\2911-ass1\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\2911-ass1\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week9_clone">
+				<item value="F:\Dropbox\UNSW\Java Development\week9_clone\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week9_clone\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week6">
+				<item value="F:\Dropbox\UNSW\Java Development\week6\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week6\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week7">
+				<item value="F:\Dropbox\UNSW\Java Development\week7\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week7\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week4">
+				<item value="F:\Dropbox\UNSW\Java Development\week4\week4\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week4\week4\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week5">
+				<item value="F:\Dropbox\UNSW\Java Development\week5\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week5\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="RemoteSystemsTempFiles">
+				<item value="F:\Dropbox\UNSW\Java Development\RemoteSystemsTempFiles\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\RemoteSystemsTempFiles\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week8">
+				<item value="F:\Dropbox\UNSW\Java Development\week8\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week8\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week10">
+				<item value="F:\Dropbox\UNSW\Java Development\week10\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week10\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="week9">
+				<item value="F:\Dropbox\UNSW\Java Development\week9\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\week9\javadoc.xml" key="antpath"/>
+			</section>
+			<section name="2911-ass2_2">
+				<item value="F:\Dropbox\UNSW\Java Development\2911-ass2_2\doc" key="destdir"/>
+				<item value="" key="href"/>
+				<item value="F:\Dropbox\UNSW\Java Development\2911-ass2_2\javadoc.xml" key="antpath"/>
+			</section>
+		</section>
+	</section>
+	<section name="JavadocWizardDialog">
+		<item value="616" key="DIALOG_WIDTH"/>
+		<item value="118" key="DIALOG_Y_ORIGIN"/>
+		<item value="615" key="DIALOG_HEIGHT"/>
+		<item value="660" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
 	</section>
 </section>

@@ -1,20 +1,17 @@
 import java.util.ArrayList;
 
 /**
- * AdjacencyList Graph class.
- * 
  * This class implements an adjacency list graph. Graph nodes
- *  and edges are stored as an adjacency list
+ *  and edges are stored as an adjacency list.
  *  
- * 
- * @author	Hayden Charles Smith, z3418003
+ * @author	Hayden Charles Smith, z3418003<br />
  * 			Last modified: 19th May 2013
  */
 public class AdjacencyListGraph<E> implements DirectedGraph<E>
 {
 
 	/**
-	 * Constructs an AdjacencylistGraph, initializing the
+	 * Constructs an AdjacencyListGraph, initializing the
 	 *  2D ArrayList that consisting of generic objects E
 	 */
 	public AdjacencyListGraph()

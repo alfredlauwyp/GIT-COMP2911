@@ -1,3 +1,0 @@
-public interface Heuristic<E> {
-	public int getEstimate(SearchNode node, DirectedGraph graph);
-}

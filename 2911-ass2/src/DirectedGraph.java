@@ -1,8 +1,6 @@
 import java.util.ArrayList;
 
 /**
- * DirectedGraph interface.
- * 
  * Provides the interface for a graph implementation that provides
  *  functionality that includes the addition/deletion of nodes
  *  and the edges associated with those nodes. This interface also
@@ -10,7 +8,7 @@ import java.util.ArrayList;
  *  the graph, if two objects have an edge between them, and providing
  *  the number of vertices/edges in the graph.
  * 
- * @author	Hayden Charles Smith, z3418003
+ * @author	Hayden Charles Smith, z3418003<br />
  * 			Last modified: 19th May 2013
  */
 public interface DirectedGraph<E> {

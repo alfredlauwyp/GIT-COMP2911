@@ -5,18 +5,39 @@ import java.util.Scanner;
 import java.util.LinkedList;
 
 /**
- * Courier Delivery Class.
- * 
  * Given a list of Jobs with a "start" point and a "finish" point
  *  from standard input, this class creates a graph, and adds these
- *  points to the graph.
+ *  points to the graph.<br />
  * This class then performs an A* search on the graph to find 
- *  the minimal spanning path from one "JobNode" to
- *  another that passes through every "JobNode"
+ *  the minimal spanning path from one "CourierDeliveryJobVector" to
+ *  another that passes through every "CourierDeliveryJobVector"<br /><br />
  * 
- * TODO: Set limitations
+ * <b>For details on the <u>Heuristic</u> please see
+ *  the CourierDeliveryHeuristic class</b><br /><br />
+ *  
+ *  Depending on the jobs entered, the program could reasonably
+ *   evaluate up to 19 nodes, or as little as 15 etc, so it should
+ *   be noted that 17 is a general limit, and not a fixed
+ *   limit.
  * 
- * @author	Hayden Charles Smith, z3418003
+ * <h5>Sample Input</h5>
+ * Job 3 3 to 5 3<br />
+ * Job 1 1 to 9 2<br />
+ * Job 3 5 to 2 7<br />
+ * Job 5 5 to 5 7<br />
+ * 
+ * <h5>Sample Output (for above)</h5>
+ * 5 nodes explored<br />
+ * cost = 31<br />
+ * Move from 0 0 to 1 1<br />
+ * Carry from 1 1 to 9 2<br />
+ * Move from 9 2 to 3 3<br />
+ * Carry from 3 3 to 5 3<br />
+ * Move from 5 3 to 5 5<br />
+ * Carry from 5 5 to 5 7<br />
+ * Move from 5 7 to 3 5<br />
+ * Carry from 3 5 to 2 7<br />
+ * @author	Hayden Charles Smith, z3418003<br />
  * 			Last modified: 19th May 2013
  */
 
@@ -30,14 +51,14 @@ public class CourierDelivery
 	{
 		try
 	    {			
-			graph				= new AdjacencyListGraph<DualPoint>();
+			graph				= new AdjacencyListGraph<Vector>();
 			asearch				= new Asearch(graph);
-			DualPoint origin	= new CourierDeliveryJobPoint(0, 0, 0, 0);
+			Vector origin	= new CourierDeliveryJobVector(0, 0, 0, 0);
 			Scanner userInput 	= new Scanner(new FileReader(args[0]));
 			
-			Comparator<SearchNode<DualPoint>> comp = new Comparator<SearchNode<DualPoint>>()
+			Comparator<SearchNode<Vector>> comp = new Comparator<SearchNode<Vector>>()
 			{
-				public int compare(SearchNode<DualPoint> e1, SearchNode<DualPoint> e2)
+				public int compare(SearchNode<Vector> e1, SearchNode<Vector> e2)
 				{
 			    	if (e1.getHeuristicEstimate() > e2.getHeuristicEstimate()) return 1;
 			    	if (e1.getHeuristicEstimate() < e2.getHeuristicEstimate()) return -1;
@@ -46,7 +67,7 @@ public class CourierDelivery
 			};
 			
 			buildGraph(userInput, origin);
-			LinkedList<DualPoint> minimalSpanningPathList = asearch.findMinimalSpanningPath(origin, comp); 
+			LinkedList<Vector> minimalSpanningPathList = asearch.findMinimalSpanningPath(origin, comp); 
 			printPathList(minimalSpanningPathList); 
 	    }
 	    catch (FileNotFoundException e)
@@ -61,17 +82,17 @@ public class CourierDelivery
 	
 	/**
 	 * Given a Scanner input, this method extracts all of the 
-	 *  relative point data for the reaction of JobPoints that
+	 *  relative point data for the reaction of CourierDeliveryJobVector's that
 	 *  are then added to the graph
 	 * @param userInput Scanner input
-	 * @param initialDualPoint Origin point to add to the graph (in 
+	 * @param initialVector Origin point to add to the graph (in 
 	 *  case an origin is not given in the input)
 	 */
-	private static void buildGraph(Scanner userInput, DualPoint initialDualPoint)
+	private static void buildGraph(Scanner userInput, Vector initialVector)
 	{
-		if (initialDualPoint != null)
+		if (initialVector != null)
 		{
-			graph.addNode(initialDualPoint);
+			graph.addNode(initialVector);
 		}
 		
 		while (userInput.hasNextLine())
@@ -84,7 +105,7 @@ public class CourierDelivery
 			int fromY = Integer.parseInt(input[COODINATE_FROM_Y]);
 			int toX =	Integer.parseInt(input[COODINATE_TO_X]);
 			int toY = 	Integer.parseInt(input[COODINATE_TO_Y]);
-			graph.addNode(new CourierDeliveryJobPoint(fromX, fromY, toX, toY));
+			graph.addNode(new CourierDeliveryJobVector(fromX, fromY, toX, toY));
 		}
 		userInput.close();
 		
@@ -93,30 +114,30 @@ public class CourierDelivery
 	}
 	
 	/**
-	 * Given a list of DualPoints, print out the number of DualPoints in this path,
-	 *  the total distance covered by the DualPoints (internal and external),
+	 * Given a list of Vectors, print out the number of Vectors in this path,
+	 *  the total distance covered by the Vector (internal and external),
 	 *  and provide a summary of the movements (or carries) made between or within
-	 *  these DualPoints
-	 * @param path LinkedList of DualPoint's that constitute the path
+	 *  these Vectors
+	 * @param path LinkedList of Vector's that constitute the path
 	 * @return Single string that contains all necessary text
 	 */
-	private static void printPathList(LinkedList<DualPoint> path)
+	private static void printPathList(LinkedList<Vector> path)
 	{
 		String output = new String();
 		int totalDistance = 0;
 		for (int i = 0; i < (path.size() - 1); i++)
 		{
-			DualPoint nodeLeft = path.get(i);
-			DualPoint nodeRight = path.get(i + 1);
+			Vector nodeLeft = path.get(i);
+			Vector nodeRight = path.get(i + 1);
 			
 			// Check if "Move"'s START and FINISH are not the same
 			if (nodeLeft.getExternalDistanceTo(nodeRight) > 0)
 			{
 				output = output + "Move from " + nodeLeft.getXFinish() + " " + nodeLeft.getYFinish()
-					+ " to " + nodeRight.getXStart() + " " + nodeRight.getYStart() + "\n";
+				 + " to " + nodeRight.getXStart() + " " + nodeRight.getYStart() + "\n";
 			}
 			output = output + "Carry from " + nodeRight.getXStart() + " " + nodeRight.getYStart()
-				+ " to " + nodeRight.getXFinish() + " " + nodeRight.getYFinish() + "\n";
+			 + " to " + nodeRight.getXFinish() + " " + nodeRight.getYFinish() + "\n";
 			
 			// Add both the internal and external distance on
 			totalDistance += nodeLeft.getInternalDistance();
@@ -124,8 +145,8 @@ public class CourierDelivery
 		}
 		totalDistance += path.get(path.size() - 1).getInternalDistance();
 		
-		output = asearch.getNumNodesExplored() + " nodes explored\n" + output;
 		output = "cost = " + totalDistance + "\n" + output;
+		output = asearch.getNumNodesExplored() + " nodes explored\n" + output;
 		speak(output);
 	}
 
@@ -141,7 +162,7 @@ public class CourierDelivery
 		}
 	}
 	
-	private static AdjacencyListGraph<DualPoint> graph;
+	private static AdjacencyListGraph<Vector> graph;
 	private static Asearch asearch;
 	private static final int COODINATE_FROM_X = 1;
 	private static final int COODINATE_FROM_Y = 2;
