@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.*;
+import java.util.LinkedList;
+import java.util.Random;
 
 public class Agent {
 
@@ -18,13 +20,14 @@ public class Agent {
 		this.startX = this.locX;
 		this.startY = this.locY;
 		
+		this.randomCounter360 = 0;
 		this.randomCounter = 0;
 	}
 	
 	public char get_action(char view[][])
 	{
 		this.iterations++;
-		try { Thread.sleep(50);} catch(InterruptedException e) { System.out.println("Interrupted"); }
+		try { Thread.sleep(200);} catch(InterruptedException e) { System.out.println("Interrupted"); }
 		
 		char move = 0;
 		switch (this.state)
@@ -58,6 +61,7 @@ public class Agent {
 	
 	private void addMapFeatures(char view[][])
 	{
+		checkForTools(view[MAP_VIEW_SPACE_INFRONT_X][MAP_VIEW_SPACE_INFRONT_Y]);
 		for (int i = -MAP_VIEW_CENTRE; i <= MAP_VIEW_CENTRE; i++)
 		{
 			for (int j = -MAP_VIEW_CENTRE; j <= MAP_VIEW_CENTRE; j++)
@@ -106,6 +110,14 @@ public class Agent {
 		}
 	}
 	
+	private void checkForTools(char chr)
+	{
+		if (isTool(chr))
+		{
+			toolAdd(chr);
+		}
+	}
+	
 	// ==============================================================================
 	// =========================== STATE 1: Unfogging ===============================
 	// ==============================================================================
@@ -120,75 +132,90 @@ public class Agent {
 		}
 		else
 		{
-			System.out.println("FFS");
-			if (isObstacle(relativeChar(view, 1, 0)))
+			char spaceInfront = viewForward(view);
+			if (randomCounter360 == 1)
+			{
+				randomCounter360 = 0;
+				randomCounter = 1;
+				return actionLeft();
+			}
+			else if (isTool(spaceInfront))
+			{
+				if (randomCounter == 1) randomCounter++;
+				return actionForward();
+			}
+			else if (isObstacle(viewForward(view)) && !isObstacle(viewLeft(view)))
 			{
 				randomCounter = 1;
 				return actionLeft();
 			}
-			else if (randomCounter == 2)
+			else if (randomCounter == 2 && !isObstacle(viewRight(view)))
 			{
 				randomCounter = 0;
 				return actionRight();
+			}
+			else if (isObstacle(viewForward(view)) && isObstacle(viewLeft(view)) && isObstacle(viewRight(view)))
+			{
+				randomCounter360 = 1;
+				return actionLeft();
 			}
 			else
 			{
 				if (randomCounter == 1) randomCounter++;
 				return actionForward();
 			}
+			
+			/*Random randomGenerator = new Random();
+			int randomInt = randomGenerator.nextInt(6);
+			if (isTool(spaceInfront)) return actionForward();
+			if (randomInt == 0) return actionLeft();
+			if (randomInt == 1) return actionRight();
+			if (!isObstacle(spaceInfront)) return actionForward();*/
+			
 		}		
 		return 0;
 	}
+	private int randomCounter;
+	private int randomCounter360;
 	
 	private boolean allSpacesExplored()
 	{
 		resetTempMap();
 		boolean explored = spaceExplored(this.startX, this.startY);
-		printTempMap();
-		System.out.println("Space Explored? " + explored);
+		System.out.println("Explored all possible map? " + explored);
 		return explored;
 	}
 	
 	private boolean spaceExplored(int x, int y)
 	{
-		System.out.println("Coords: ("+x+","+y+")");
 		addTempMap(x,y);
 		boolean result = true;
 		
 		// Search Downward
 		if (!inTempMap(x+1,y) && result == true)
 		{
-			System.out.println("DOWN level 1");
 			if (!isObstacle(map[x + 1][y]))
 			{
-				System.out.println("DOWN level 2");
 				if (isBlank(map[x+1][y]))
 				{
-					System.out.println("DOWN level 3a");
 					result = false;
 				}
 				else
 				{
-					System.out.println("DOWN level 3b");
 					result = spaceExplored(x+1,y);
 				}
 			}
 		}
 		if (!inTempMap(x-1,y) && result == true)
 		{
-			System.out.println("UP level 1");
 			if (!isObstacle(map[x - 1][y]))
 			{
-				System.out.println("UP level 2");
-
 				if (isBlank(map[x-1][y]))
 				{
-					System.out.println("UP level 3a");
 					result = false;
 				}
 				else
 				{
-					System.out.println("UP level 3b");
 					result = spaceExplored(x-1,y);
 				}
 			}
@@ -196,37 +223,29 @@ public class Agent {
 		
 		if (!inTempMap(x,y+1) && result == true)
 		{
-			System.out.println("RIGHT level 1");
 			if (!isObstacle(map[x][y + 1]))
 			{
-				System.out.println("RIGHT level 2");
 				if (isBlank(map[x][y + 1]))
 				{
-					System.out.println("RIGHT level 3a");
 					result = false;
 				}
 				else
 				{
-					System.out.println("RIGHT level 3b");
 					result = spaceExplored(x,y+1);
 				}
 			}
 		}
 		if (!inTempMap(x,y-1) && result == true)
 		{
-			System.out.println("LEFT level 1");
 			if (!isObstacle(map[x][y - 1]))
 			{
-				System.out.println("LEFT level 2");
 
 				if (isBlank(map[x][y - 1]))
 				{
-					System.out.println("LEFT level 3a");
 					result = false;
 				}
 				else
 				{
-					System.out.println("LEFT level 3b");
 					result = spaceExplored(x,y - 1);
 				}
 			}
@@ -270,6 +289,30 @@ public class Agent {
 	private char getGoalSearchingMove(char view[][])
 	{
 		return 0;
+	}
+
+	// ==============================================================================
+	// ============================== View Stuff ====================================
+	// ==============================================================================
+	
+	private char viewForward(char view[][])
+	{
+		return relativeChar(view, 1, 0);
+	}
+	
+	private char viewLeft(char view[][])
+	{
+		return relativeChar(view, 0, 1);
+	}
+	
+	private char viewRight(char view[][])
+	{
+		return relativeChar(view, 0, -1);
+	}
+	
+	private char viewBackward(char view[][])
+	{
+		return relativeChar(view, -1, 0);
 	}
 	
 	// ==============================================================================
@@ -346,6 +389,78 @@ public class Agent {
 		return false;
 	}
 	
+	private boolean isTool(char chr)
+	{
+		if (chr == TOOL_AXE || chr == TOOL_KEY || chr == TOOL_DYNAMITE || chr == TOOL_GOLD)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	// ==============================================================================
+	// ================================= Tools ======================================
+	// ==============================================================================
+	
+	private void toolAdd(char tool)
+	{
+		toolChange(tool, 1);
+	}
+	private void toolRemove(char tool)
+	{
+		toolChange(tool, -1);
+	}
+	
+	private boolean toolHave(char tool)
+	{
+		int numberOfInterest = toolCount(tool);
+		if (numberOfInterest > 0)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private int toolCount(char tool)
+	{
+		int numberOfInterest = 0;
+		switch (tool)
+		{
+		case TOOL_AXE:
+			numberOfInterest = numToolsAxe;
+		break;
+		case TOOL_KEY:
+			numberOfInterest = numToolsKey;
+		break;
+		case TOOL_DYNAMITE:
+			numberOfInterest = numToolsDynamite;
+		break;
+		case TOOL_GOLD:
+			numberOfInterest = numToolsGold;
+		break;
+		}
+		return numberOfInterest;
+	}
+	
+	private void toolChange(char tool, int change)
+	{
+		switch (tool)
+		{
+		case TOOL_AXE:
+			numToolsAxe += change;
+		break;
+		case TOOL_KEY:
+			numToolsKey += change;
+		break;
+		case TOOL_DYNAMITE:
+			numToolsDynamite += change;
+		break;
+		case TOOL_GOLD:
+			numToolsGold += change;
+		break;
+		}
+	}
+	
 	// ==============================================================================
 	// ================================= Other ======================================
 	// ==============================================================================
@@ -375,11 +490,22 @@ public class Agent {
 	private int mapBoundTop;
 	private int mapBoundBottom;
 	
-	private int randomCounter;
+	private int numToolsAxe;
+	private int numToolsKey;
+	private int numToolsDynamite;
+	private int numToolsGold;
+	
+	private int checkingForTools;
 	
 	// ==============================================================================
 	// ============================= Definitions ====================================
 	// ==============================================================================
+	
+	// Tools
+	private static final char TOOL_AXE 			= 'a';
+	private static final char TOOL_KEY 			= 'k';
+	private static final char TOOL_DYNAMITE		= 'd';
+	private static final char TOOL_GOLD 		= 'g';
 	
 	// Rotations / Directions
 	private static final int ROTATE_CCW 		= 1;
@@ -394,13 +520,14 @@ public class Agent {
 	private static final int MAP_SEARCH_SIZE 	= 170;
 	private static final int MAP_VIEW_SIZE 		= 5;
 	private static final int MAP_VIEW_CENTRE 	= 2;
-	
+	private static final int MAP_VIEW_SPACE_INFRONT_X = 1;
+	private static final int MAP_VIEW_SPACE_INFRONT_Y = 2;
 	// States
 	private static final int STATE_UNFOGGING 	= 0;
 	private static final int STATE_MAKINGPATH 	= 1;
 	private static final int STATE_SEARCHINGGOAL= 2;
 
-	// Obstacles and Tools
+	// Obstacles
 	private static final char OBSTACLE_UNSEEN	= 0;
 	private static final char OBSTACLE_BLANK 	= ' ';
 	private static final char OBSTACLE_EXPLORED	= '.';
@@ -408,10 +535,6 @@ public class Agent {
 	private static final char OBSTACLE_DOOR 	= '-';
 	private static final char OBSTACLE_WALL		= '*';
 	private static final char OBSTACLE_WATER 	= '~';
-	private static final char TOOL_AXE 			= 'a';
-	private static final char TOOL_KEY 			= 'k';
-	private static final char TOOL_DYNAMITE		= 'd';
-	private static final char TOOL_GOLD 		= 'g';
 	
 	// Actions
 	private static final char ACTION_TURNRIGHT	= 'R';
@@ -477,7 +600,7 @@ public class Agent {
 	}
 	private void printMap()
 	{
-		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + ")");		
+		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
 		System.out.print("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
