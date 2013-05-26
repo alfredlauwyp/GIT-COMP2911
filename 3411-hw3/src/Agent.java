@@ -24,7 +24,7 @@ public class Agent {
 	public char get_action(char view[][])
 	{
 		this.iterations++;
-		try { Thread.sleep(400);} catch(InterruptedException e) { System.out.println("Interrupted"); }
+		try { Thread.sleep(50);} catch(InterruptedException e) { System.out.println("Interrupted"); }
 		
 		char move = 0;
 		switch (this.state)
