@@ -14,14 +14,14 @@ public class Agent {
 		
 		this.map = new char[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		this.mapTemp = new boolean[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
+		this.mapWeight = new int[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		
 		this.locX = (MAP_SEARCH_SIZE / 2);
 		this.locY = (MAP_SEARCH_SIZE / 2);
 		this.startX = this.locX;
 		this.startY = this.locY;
 		
-		this.randomCounter360 = 0;
-		this.randomCounter = 0;
+		weightedMapReset();
 	}
 	
 	public char get_action(char view[][])
@@ -42,6 +42,7 @@ public class Agent {
 				move = getGoalSearchingMove(view);
 			break;
 		}	
+		doAction(move);
 		return move;
 		
 	}
@@ -125,58 +126,169 @@ public class Agent {
 	private char getUnfoggingMove(char view[][])
 	{
 		addMapFeatures(view);
-		
+		weightedMap();
 		if (this.allSpacesExplored())
 		{
 			changeState(STATE_MAKINGPATH);
 		}
 		else
 		{
-			char spaceInfront = viewForward(view);
-			if (randomCounter360 == 1)
-			{
-				randomCounter360 = 0;
-				randomCounter = 1;
-				return actionLeft();
-			}
-			else if (isTool(spaceInfront))
-			{
-				if (randomCounter == 1) randomCounter++;
-				return actionForward();
-			}
-			else if (isObstacle(viewForward(view)) && !isObstacle(viewLeft(view)))
-			{
-				randomCounter = 1;
-				return actionLeft();
-			}
-			else if (randomCounter == 2 && !isObstacle(viewRight(view)))
-			{
-				randomCounter = 0;
-				return actionRight();
-			}
-			else if (isObstacle(viewForward(view)) && isObstacle(viewLeft(view)) && isObstacle(viewRight(view)))
-			{
-				randomCounter360 = 1;
-				return actionLeft();
-			}
-			else
-			{
-				if (randomCounter == 1) randomCounter++;
-				return actionForward();
-			}
-			
-			/*Random randomGenerator = new Random();
-			int randomInt = randomGenerator.nextInt(6);
-			if (isTool(spaceInfront)) return actionForward();
-			if (randomInt == 0) return actionLeft();
-			if (randomInt == 1) return actionRight();
-			if (!isObstacle(spaceInfront)) return actionForward();*/
-			
+			return headTowards(getGreatestMapWeightX(), getGreatestMapWeightY());
 		}		
 		return 0;
 	}
-	private int randomCounter;
-	private int randomCounter360;
+	
+	private char headTowards(int x, int y)
+	{
+		char move = 0;
+		move = turnTowards();
+		if (move == 0)
+		{
+			move = ACTION_MOVEFORWARD;
+		}		
+		return move;
+	}
+	
+	private char turnTowards()
+	{		
+		int turnDirection = greatestAdjacentWeight();
+		if (turnDirection == DIRECTION_RELATIVE_LEFT)
+		{
+			return ACTION_TURNLEFT;
+		}
+		if (turnDirection == DIRECTION_RELATIVE_RIGHT)
+		{
+			return ACTION_TURNRIGHT;
+		}
+		if (turnDirection == DIRECTION_RELATIVE_BACKWARD)
+		{
+			return ACTION_TURNLEFT;
+		}
+		return 0;
+	}
+	
+	private int getGreatestMapWeightX()
+	{
+		return this.greatestMapWeightX;
+	}
+	
+	private int getGreatestMapWeightY()
+	{
+		return this.greatestMapWeightX;
+	}
+	
+	private void weightedMapReset()
+	{
+		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
+		{
+			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
+			{
+				mapWeight[i][j] = 50;
+			}
+		}
+	}
+	
+	private int greatestAdjacentWeight()
+	{
+		int greatestDirection = DIRECTION_RELATIVE_FORWARD;
+		int greatest = viewForwardWeight();
+		if (viewRightWeight() > greatest)
+		{	
+			greatestDirection = DIRECTION_RELATIVE_RIGHT;
+		}
+		if (viewBackwardWeight() > greatest)
+		{
+			greatestDirection = DIRECTION_RELATIVE_BACKWARD;
+		}
+		if (viewLeftWeight() > greatest)
+		{
+			greatestDirection = DIRECTION_RELATIVE_LEFT;
+		}
+		return greatestDirection;
+	}
+	
+	private void weightedMap()
+	{
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
+		{
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+			{
+				if (!mapTemp[i][j])
+				{
+					//mapWeight[i][j] = 0;
+				}
+			}
+		}
+
+		mapWeight[locY][locX] -= 9;
+		
+		mapWeight[locY - 1][locX] -= 2;
+		mapWeight[locY + 1][locX] -= 2;
+		mapWeight[locY][locX - 1] -= 2;
+		mapWeight[locY][locX + 1] -= 2;
+		mapWeight[locY - 1][locX + 1] -= 2;
+		mapWeight[locY - 1][locX - 1] -= 2;
+		mapWeight[locY + 1][locX + 1] -= 2;
+		mapWeight[locY + 1][locX - 1] -= 2;
+		
+		mapWeight[locY + 2][locX] -= 1;
+		mapWeight[locY + 2][locX + 1] -= 1;
+		mapWeight[locY + 2][locX + 2] -= 1;
+		mapWeight[locY + 2][locX - 1] -= 1;
+		mapWeight[locY + 2][locX - 2] -= 1;
+		
+		mapWeight[locY - 2][locX] -= 1;
+		mapWeight[locY - 2][locX + 1] -= 1;
+		mapWeight[locY - 2][locX + 2] -= 1;
+		mapWeight[locY - 2][locX - 1] -= 1;
+		mapWeight[locY - 2][locX - 2] -= 1;
+		
+		mapWeight[locY - 1][locX + 2] -= 1;
+		mapWeight[locY - 1][locX - 2] -= 1;
+		mapWeight[locY + 1][locX + 2] -= 1;
+		mapWeight[locY + 1][locX - 2] -= 1;
+		mapWeight[locY][locX + 2] -= 1;
+		mapWeight[locY][locX - 2] -= 1;
+		
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
+		{
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+			{
+				if (isTool(map[i][j]))
+				{
+					mapWeight[i][j] = 100;
+				}
+				/*mapWeight[i][j] += numBlanksAround(i, j) * 8;
+				mapWeight[i + 1][j + 1] += numBlanksAround(i, j) * 4;
+				mapWeight[i + 1][j] += numBlanksAround(i, j) * 4;
+				mapWeight[i + 1][j - 1] += numBlanksAround(i, j) * 4;
+				mapWeight[i - 1][j + 1] += numBlanksAround(i, j) * 4;
+				mapWeight[i - 1][j] += numBlanksAround(i, j) * 4;
+				mapWeight[i - 1][j - 1] += numBlanksAround(i, j) * 4;
+				mapWeight[i][j + 1] += numBlanksAround(i, j) * 4;
+				mapWeight[i][j - 1] += numBlanksAround(i, j) * 4;*/
+				
+				if (isObstacle(map[i][j]))
+				{
+					mapWeight[i][j] = 0;
+				}
+				if (mapWeight[i][j] < 0)
+				{
+					mapWeight[i][j] = 0;
+				}	
+			}
+		}
+	}
+	
+	private int numBlanksAround(int x, int y)
+	{
+		int counts = 0;
+		if (isBlank(map[x + 1][y])) counts++;
+		if (isBlank(map[x - 1][y])) counts++;
+		if (isBlank(map[x][y + 1])) counts++;
+		if (isBlank(map[x][y - 1])) counts++;
+		return counts;
+	}
 	
 	private boolean allSpacesExplored()
 	{
@@ -198,7 +310,7 @@ public class Agent {
 			{
 				if (isBlank(map[x+1][y]))
 				{
-					result = false;
+					result = false;	
 				}
 				else
 				{
@@ -295,30 +407,97 @@ public class Agent {
 	// ============================== View Stuff ====================================
 	// ==============================================================================
 	
-	private char viewForward(char view[][])
+	private char viewForward()
 	{
-		return relativeChar(view, 1, 0);
+		if (getDirection() == DIRECTION_UP) 	return map[locY - 1][locX];
+		if (getDirection() == DIRECTION_DOWN) 	return map[locY + 1][locX];
+		if (getDirection() == DIRECTION_LEFT) 	return map[locY][locX - 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return map[locY][locX + 1];
+		return 0;
 	}
 	
-	private char viewLeft(char view[][])
+	private char viewLeft()
 	{
-		return relativeChar(view, 0, 1);
+		if (getDirection() == DIRECTION_UP) 	return map[locY][locX - 1];
+		if (getDirection() == DIRECTION_DOWN) 	return map[locY][locX + 1];
+		if (getDirection() == DIRECTION_LEFT) 	return map[locY + 1][locX];
+		if (getDirection() == DIRECTION_RIGHT) 	return map[locY - 1][locX];
+		return 0;
 	}
 	
-	private char viewRight(char view[][])
+	private char viewRight()
 	{
-		return relativeChar(view, 0, -1);
+		if (getDirection() == DIRECTION_UP) 	return map[locY][locX + 1];
+		if (getDirection() == DIRECTION_DOWN) 	return map[locY][locX - 1];
+		if (getDirection() == DIRECTION_LEFT) 	return map[locY - 1][locX];
+		if (getDirection() == DIRECTION_RIGHT) 	return map[locY + 1][locX];
+		return 0;
 	}
 	
-	private char viewBackward(char view[][])
+	private char viewBackward()
 	{
-		return relativeChar(view, -1, 0);
+		if (getDirection() == DIRECTION_UP) 	return map[locY + 1][locX];
+		if (getDirection() == DIRECTION_DOWN) 	return map[locY - 1][locX];
+		if (getDirection() == DIRECTION_LEFT) 	return map[locY][locX + 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return map[locY][locX - 1];
+		return 0;
+	}
+	
+	private int viewForwardWeight()
+	{
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY - 1][locX];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY + 1][locX];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY][locX - 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY][locX + 1];
+		return 0;
+	}
+	
+	private int viewLeftWeight()
+	{
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY][locX - 1];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY][locX + 1];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY + 1][locX];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY - 1][locX];
+		return 0;
+	}
+	
+	private int viewRightWeight()
+	{
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY][locX + 1];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY][locX - 1];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY - 1][locX];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY + 1][locX];
+		return 0;
+	}
+	
+	private int viewBackwardWeight()
+	{
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY + 1][locX];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY - 1][locX];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY][locX + 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY][locX - 1];
+		return 0;
 	}
 	
 	// ==============================================================================
 	// =========================== Series of Actions ================================
 	// ==============================================================================
 	
+	private void doAction(char chr)
+	{
+		switch (chr)
+		{
+		case ACTION_MOVEFORWARD:
+			actionForward();
+		break;
+		case ACTION_TURNLEFT:
+			actionLeft();
+		break;
+		case ACTION_TURNRIGHT:
+			actionRight();
+		break;
+		}
+	}
 	private char actionForward()
 	{
 		if (getDirection() == DIRECTION_UP) 	locY--;
@@ -476,6 +655,10 @@ public class Agent {
 	
 	private char[][] map;
 	private boolean[][] mapTemp;
+	private int[][] mapWeight;
+	
+	private int greatestMapWeightX;
+	private int greatestMapWeightY;
 	
 	private int iterations;
 	private int direction;
@@ -515,6 +698,11 @@ public class Agent {
 	private static final int DIRECTION_LEFT 	= 1;
 	private static final int DIRECTION_DOWN 	= 2;
 	private static final int DIRECTION_RIGHT 	= 3;
+	private static final int DIRECTION_RELATIVE_FORWARD 	= 0;
+	private static final int DIRECTION_RELATIVE_LEFT 		= 1;
+	private static final int DIRECTION_RELATIVE_RIGHT 		= 2;
+	private static final int DIRECTION_RELATIVE_BACKWARD 	= 3;
+	
 	
 	// Map Properties
 	private static final int MAP_SEARCH_SIZE 	= 170;
@@ -593,11 +781,53 @@ public class Agent {
 		{
 			System.out.print(j + " ");
 		}
-		System.out.print("   \n");
-		
-		
-		
+		System.out.print("   \n");		
 	}
+	
+	private void printWeightMap()
+	{
+		System.out.println("Greatest Weight ("+greatestMapWeightX+","+greatestMapWeightY+"): " + mapWeight[greatestMapWeightX][greatestMapWeightY]);
+		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
+		System.out.print("   ");
+		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+		{
+			System.out.print(j + " ");
+		}
+		System.out.print("   \n");
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
+		{
+			System.out.print(i + " ");
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+			{
+				if (locY == i && locX == j)
+				{
+					System.out.print(".  ");
+				}
+				else if (mapWeight[i][j] > 99)
+				{
+					System.out.print(mapWeight[i][j] + "");
+				}
+				else if (mapWeight[i][j] > 9)
+				{
+					System.out.print(mapWeight[i][j] + " ");
+				}
+				else
+				{
+					System.out.print(mapWeight[i][j] + "  ");
+				}
+				
+			}
+			System.out.print(" " + i);
+			System.out.println();
+		}
+		System.out.print("   ");
+		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+		{
+			System.out.print(j + " ");
+		}
+		System.out.print("   \n");
+	}
+	
 	private void printMap()
 	{
 		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
@@ -717,6 +947,8 @@ public class Agent {
             
             action = agent.get_action( view );
             out.write( action );
+            agent.printTempMap();
+            agent.printWeightMap();
             agent.printMap();
             
          }
