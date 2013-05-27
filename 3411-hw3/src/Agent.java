@@ -1,5 +1,7 @@
+import java.awt.Point;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -21,27 +23,104 @@ public class Agent {
 		this.startX = this.locX;
 		this.startY = this.locY;
 		
+		this.firstMove = true;
+		this.findingPath = true;
+		
 		weightedMapReset();
 	}
+	
+	private boolean findingPath;
 	
 	public char get_action(char view[][])
 	{
 		this.iterations++;
-		try { Thread.sleep(200);} catch(InterruptedException e) { System.out.println("Interrupted"); }
+		try { Thread.sleep(100);} catch(InterruptedException e) { System.out.println("Interrupted"); }
 		
 		char move = 0;
-		switch (this.state)
+		if (toolCount(TOOL_GOLD) > 0)
 		{
-			case STATE_UNFOGGING:
-				move = getUnfoggingMove(view);
-			break;
-			case STATE_MAKINGPATH:
-				while(true);//move = getPathMakingMove(view);
-			//break;
-			case STATE_SEARCHINGGOAL:
-				move = getGoalSearchingMove(view);
-			break;
-		}	
+			if (findingPath)
+			{
+				findPath(startY, startX);
+				findingPath = false;
+			}
+			else
+			{
+				if (findPathResult.size() == 0)
+				{
+					findingPath = true;
+				}
+				
+				System.out.println("(" + (int)findPathResult.get(0).getX() + "," + (int)findPathResult.get(0).getY() + ")");
+				int xCoord = (int)findPathResult.get(0).getX();
+				int yCoord = (int)findPathResult.get(0).getY();
+				if (locY - 1 == xCoord && locX == yCoord)
+				{
+					//System.out.println("Trying to go up");
+					// move up 
+					if (getDirection() == DIRECTION_UP)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNLEFT;
+					else move = ACTION_TURNRIGHT;
+				}
+				else if (locY + 1 == xCoord  && locX == yCoord)
+				{
+					System.out.println("Trying to go down (" + getDirection() + " -- " + DIRECTION_DOWN + ")");
+					// Move down
+					if (getDirection() == DIRECTION_DOWN)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNRIGHT;
+					else move = ACTION_TURNLEFT;
+				}
+				else if (locY == xCoord && locX - 1== yCoord)
+				{
+					//System.out.println("Trying to go left");
+					// Move left
+					if (getDirection() == DIRECTION_LEFT)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_UP) move = ACTION_TURNLEFT;
+					else move = ACTION_TURNRIGHT;
+				}
+				else if (locY == xCoord && locX + 1 == yCoord)
+				{
+					//System.out.println("Trying to go right");
+					// Move right
+					if (getDirection() == DIRECTION_RIGHT)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_DOWN) move = ACTION_TURNLEFT;
+					else move = ACTION_TURNRIGHT;
+				}
+					
+			}	
+			
+		}
+		else
+		{
+			switch (this.state)
+			{
+				case STATE_UNFOGGING:
+					move = getUnfoggingMove(view);
+				break;
+				case STATE_MAKINGPATH:
+					while(true);//move = getPathMakingMove(view);
+				//break;
+				case STATE_SEARCHINGGOAL:
+					move = getGoalSearchingMove(view);
+				break;
+			}	
+		}
 		doAction(move);
 		return move;
 		
@@ -116,6 +195,26 @@ public class Agent {
 		if (isTool(chr))
 		{
 			toolAdd(chr);
+			if (getDirection() == DIRECTION_UP)
+			{
+				System.out.println("========================UP!");
+				map[locY - 1][locX] = OBSTACLE_EXPLORED;
+			}
+			if (getDirection() == DIRECTION_DOWN)
+			{
+				System.out.println("========================DOWN!");
+				map[locY + 1][locX] = OBSTACLE_EXPLORED;
+			}
+			if (getDirection() == DIRECTION_LEFT) 
+			{
+				System.out.println("========================LEFT!");
+				map[locY][locX - 1] = OBSTACLE_EXPLORED;
+			}
+			if (getDirection() == DIRECTION_RIGHT)
+			{
+				System.out.println("========================RIGHT! ("+locY+","+(locX + 1)+")");
+				map[locY][locX + 1] = OBSTACLE_EXPLORED;
+			}
 		}
 	}
 	
@@ -126,7 +225,7 @@ public class Agent {
 	private char getUnfoggingMove(char view[][])
 	{
 		addMapFeatures(view);
-		weightedMap();
+		
 		if (this.allSpacesExplored())
 		{
 			changeState(STATE_MAKINGPATH);
@@ -140,14 +239,18 @@ public class Agent {
 	
 	private char headTowards(int x, int y)
 	{
+		if (firstMove) { weightedMap(); firstMove = false;}
 		char move = 0;
 		move = turnTowards();
 		if (move == 0)
 		{
+			weightedMap();
+			System.out.println("Tits");
 			move = ACTION_MOVEFORWARD;
 		}		
 		return move;
 	}
+	private boolean firstMove;
 	
 	private char turnTowards()
 	{		
@@ -209,17 +312,6 @@ public class Agent {
 	
 	private void weightedMap()
 	{
-		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
-		{
-			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
-			{
-				if (!mapTemp[i][j])
-				{
-					//mapWeight[i][j] = 0;
-				}
-			}
-		}
-
 		mapWeight[locY][locX] -= 9;
 		
 		mapWeight[locY - 1][locX] -= 2;
@@ -256,23 +348,13 @@ public class Agent {
 			{
 				if (isTool(map[i][j]))
 				{
-					mapWeight[i][j] = 100;
-				}
-				/*mapWeight[i][j] += numBlanksAround(i, j) * 8;
-				mapWeight[i + 1][j + 1] += numBlanksAround(i, j) * 4;
-				mapWeight[i + 1][j] += numBlanksAround(i, j) * 4;
-				mapWeight[i + 1][j - 1] += numBlanksAround(i, j) * 4;
-				mapWeight[i - 1][j + 1] += numBlanksAround(i, j) * 4;
-				mapWeight[i - 1][j] += numBlanksAround(i, j) * 4;
-				mapWeight[i - 1][j - 1] += numBlanksAround(i, j) * 4;
-				mapWeight[i][j + 1] += numBlanksAround(i, j) * 4;
-				mapWeight[i][j - 1] += numBlanksAround(i, j) * 4;*/
-				
+					//mapWeight[i][j] += 5;
+				}				
 				if (isObstacle(map[i][j]))
 				{
-					mapWeight[i][j] = 0;
+					mapWeight[i][j] = -1;
 				}
-				if (mapWeight[i][j] < 0)
+				else if (mapWeight[i][j] < 0)
 				{
 					mapWeight[i][j] = 0;
 				}	
@@ -301,65 +383,70 @@ public class Agent {
 	private boolean spaceExplored(int x, int y)
 	{
 		addTempMap(x,y);
+		//System.out.println("Recursive Call");
 		boolean result = true;
+		
+		if (isBlank(map[x+2][y - 2])) result = false;	
+		if (isBlank(map[x+2][y - 1])) result = false;	
+		if (isBlank(map[x+2][y])) result = false;		
+		if (isBlank(map[x+2][y + 1])) result = false;	
+		if (isBlank(map[x+2][y + 2])) result = false;
+		
+		if (isBlank(map[x+1][y - 2])) result = false;
+		if (isBlank(map[x+1][y - 1])) result = false;
+		if (isBlank(map[x+1][y])) result = false;	
+		if (isBlank(map[x+1][y + 1])) result = false;
+		if (isBlank(map[x+1][y + 2])) result = false;
+		
+		if (isBlank(map[x][y - 2])) result = false;
+		if (isBlank(map[x][y - 1])) result = false;
+		if (isBlank(map[x][y])) result = false;		
+		if (isBlank(map[x][y + 1])) result = false;
+		if (isBlank(map[x][y + 2])) result = false;
+		
+		if (isBlank(map[x-1][y - 2])) result = false;
+		if (isBlank(map[x-1][y - 1])) result = false;
+		if (isBlank(map[x-1][y])) result = false;	
+		if (isBlank(map[x-1][y + 1])) result = false;
+		if (isBlank(map[x-1][y + 2])) result = false;
+		
+		if (isBlank(map[x-2][y - 2])) result = false;
+		if (isBlank(map[x-2][y - 1])) result = false;
+		if (isBlank(map[x-2][y])) result = false;	
+		if (isBlank(map[x-2][y + 1])) result = false;
+		if (isBlank(map[x-2][y + 2])) result = false;
 		
 		// Search Downward
 		if (!inTempMap(x+1,y) && result == true)
 		{
+			//System.out.println("Down");
 			if (!isObstacle(map[x + 1][y]))
 			{
-				if (isBlank(map[x+1][y]))
-				{
-					result = false;	
-				}
-				else
-				{
-					result = spaceExplored(x+1,y);
-				}
+				result = spaceExplored(x+1,y);
 			}
 		}
 		if (!inTempMap(x-1,y) && result == true)
 		{
+			//System.out.println("Up");
 			if (!isObstacle(map[x - 1][y]))
 			{
-				if (isBlank(map[x-1][y]))
-				{
-					result = false;
-				}
-				else
-				{
-					result = spaceExplored(x-1,y);
-				}
+				result = spaceExplored(x-1,y);
 			}
-		}
-		
+		}		
 		if (!inTempMap(x,y+1) && result == true)
 		{
+			//System.out.println("Right");
 			if (!isObstacle(map[x][y + 1]))
 			{
-				if (isBlank(map[x][y + 1]))
-				{
-					result = false;
-				}
-				else
-				{
-					result = spaceExplored(x,y+1);
-				}
+				result = spaceExplored(x,y+1);
 			}
 		}
 		if (!inTempMap(x,y-1) && result == true)
 		{
+			//System.out.println("Left");
 			if (!isObstacle(map[x][y - 1]))
 			{
-
-				if (isBlank(map[x][y - 1]))
-				{
-					result = false;
-				}
-				else
-				{
-					result = spaceExplored(x,y - 1);
-				}
+				result = spaceExplored(x,y - 1);
 			}
 		}
 		
@@ -370,8 +457,10 @@ public class Agent {
 	{
 		return mapTemp[x][y];
 	}
+	
 	private void addTempMap(int x, int y)
 	{
+		//System.out.println("Adding to temp map ("+x+","+y+")");
 		mapTemp[x][y] = true;
 	}
 	
@@ -385,6 +474,113 @@ public class Agent {
 			}
 		}
 	}
+	
+	private void findPath(int x, int y)
+	{
+		ArrayList<Point> pathHistory = new ArrayList<Point>();
+		System.out.println("Finding Path to ("+x+","+y+")!");
+		resetTempMap();
+		
+		findPathR(locY, locX, x, y, pathHistory);		
+	}
+	
+	private void printPathHistory(ArrayList<Point> pathHistory)
+	{
+		for (int i = 0; i < pathHistory.size(); i++)
+		{
+			System.out.print("(" + (int)pathHistory.get(i).getX() + "," + (int)pathHistory.get(i).getY() + "), ");
+		}
+	}
+	
+	private boolean findPathR(int x, int y, int xGoal, int yGoal, ArrayList<Point> pathHistory)
+	{
+		ArrayList<Point> pathHistoryClone = new ArrayList<Point>(pathHistory);
+		//System.out.print("At point ("+x+","+y+")\n");
+		addTempMap(x,y);
+		boolean result = false;
+		if (x == xGoal && y == yGoal)
+		{
+			result = true;
+			//System.out.println("Found Goal! ");
+			findPathResult = pathHistoryClone;
+			
+			// Holy fuck please lord forgive me for the below
+			// This strips away the (x,x) coordinates that don't get pruned in the DFS
+			boolean finishedRemoving = false;
+			while (!finishedRemoving)
+			{
+				finishedRemoving = true;
+				for (int i = 0; i < findPathResult.size(); i++)
+				{
+					if (i < findPathResult.size() - 1)
+					{
+						int xCo1 = (int)findPathResult.get(i).getX();
+						int yCo1 = (int)findPathResult.get(i).getY();
+						int xCo2 = (int)findPathResult.get(i+1).getX();
+						int yCo2 = (int)findPathResult.get(i+1).getY();
+						if (
+						 (xCo2 == xCo1 + 2 && yCo2 == yCo1) || 
+						 (yCo2 == yCo1 + 2 && xCo2 == xCo1) ||
+						 (xCo2 == xCo1 - 2 && yCo2 == yCo1) ||
+						 (yCo2 == yCo1 - 2 && xCo2 == xCo1)
+						)
+						{
+							System.out.println("HALLO!!!");
+							findPathResult.remove(i);
+							finishedRemoving = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (!result)
+		{
+			if (xGoal > x && Math.abs(xGoal - x) >= Math.abs(yGoal - y))
+			{
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+			else if (yGoal > y && Math.abs(xGoal - x) <= Math.abs(yGoal - y))
+			{
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+			}
+			else if (xGoal < x && Math.abs(xGoal - x) > Math.abs(yGoal - y))
+			{
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+			else if (yGoal < y && Math.abs(xGoal - x) < Math.abs(yGoal - y))
+			{
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+		}
+		
+		return result;
+	}
+	
+	private ArrayList<Point> findPathResult;
+	
+	private boolean findPathRinterim(int x, int y, int xGoal, int yGoal, ArrayList<Point> pathHistory)
+	{
+		if (!inTempMap(x,y) && !isObstacle(map[x][y]) && !isBlank(map[x][y]))
+		{
+			pathHistory.add(new Point(x, y));
+			return findPathR(x, y, xGoal, yGoal, pathHistory);
+		}
+		return false;
+	}
+	
 	// ==============================================================================
 	// =========================== STATE 2: Path Making =============================
 	// ==============================================================================
@@ -735,34 +931,15 @@ public class Agent {
 	
 	private void printTempMap()
 	{
-		int left = MAP_SEARCH_SIZE;
-		int right = 0;
-		int top = MAP_SEARCH_SIZE;
-		int bottom = 0;
-		
-		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
-		{
-			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
-			{
-				if (mapTemp[i][j])
-				{
-					if (left > i)	left = i;
-					if (right < i)	right = i;
-					if (top > j)	top = j;
-					if (bottom < j) bottom = j;
-				}
-			}
-		}
-		System.out.println(left + ", " + right + ", " + top + ", " + bottom);
-		for (int j = top; j <= bottom; j++)
+		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
 			System.out.print(j + " ");
 		}
 		System.out.print("   \n");
-		for (int i = left; i <= right; i++)
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
 			System.out.print(i + " ");
-			for (int j = top; j <= bottom; j++)
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
 				if (mapTemp[i][j])
 				{
@@ -777,7 +954,7 @@ public class Agent {
 			System.out.println();
 		}
 		System.out.print("   ");
-		for (int j = top; j <= bottom; j++)
+		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
 			System.out.print(j + " ");
 		}
@@ -807,7 +984,7 @@ public class Agent {
 				{
 					System.out.print(mapWeight[i][j] + "");
 				}
-				else if (mapWeight[i][j] > 9)
+				else if (mapWeight[i][j] > 9 || mapWeight[i][j] < 0)
 				{
 					System.out.print(mapWeight[i][j] + " ");
 				}
@@ -947,8 +1124,8 @@ public class Agent {
             
             action = agent.get_action( view );
             out.write( action );
-            agent.printTempMap();
-            agent.printWeightMap();
+            //agent.printTempMap();
+            //agent.printWeightMap();
             agent.printMap();
             
          }

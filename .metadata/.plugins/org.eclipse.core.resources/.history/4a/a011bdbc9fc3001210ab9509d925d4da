@@ -1,0 +1,40 @@
+/**
+* Class that allows creation, modification and access to
+*  a board
+* @author Hayden
+* @version 0.1
+* 
+*/
+public interface Board<E>
+{
+	/**
+	 * 
+	 * @param row Row cell is in
+	 * @param col Column cell is in
+	 * @return Value currently held in the cell
+	 */
+	public E getCellValue(E row, E col);
+	public void setCellValue(E row, E col, E number);
+	
+	// Cell Visiblity
+	public boolean isCurrentlyVisibleCell(E row, E col);
+	public boolean isInitiallyVisibleCell(E row, E col);
+	public void setCellVisiblity(E row, E col, boolean visiblity);
+	
+	// Cell Temp Values
+	public boolean isVisibleCellTemp(E row, E col, E number);
+	public void setCellTemp(E row, E col, E number, boolean isSet);
+	
+	// Correctness
+	public boolean isCorrectBoard();
+	public boolean isCorrectCell(E row, E col);
+	
+	// Difficulty
+	public E difficultyValueEasy();
+	public E difficultyValueMedium();
+	public E difficultyValueHard();
+	
+	// Board Size
+	public E getBoardSize();
+	
+}

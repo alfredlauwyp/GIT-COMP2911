@@ -1,0 +1,98 @@
+/**
+ * Class to store and access values associated with an individual
+ *  cell in the grid
+ * @author Hayden, Laura, Jerome, Steven
+ * @version 0.1
+ * 
+ */
+public class BoardCell {
+
+	public BoardCell(int boardSize)
+	{		
+		this.boardSize = boardSize;
+		for (int i = 0; i < boardSize; i++)
+		{
+			tempNumbers[i] = false;
+		}
+	}
+	
+	public int getValue()
+	{
+		if (this.valueInput == -1)
+		{
+			return valueFinal;
+		}
+		else
+		{
+			return valueInput;
+		}
+	}
+	
+	public void setValue(int number)
+	{
+		this.valueInput = number;
+	}
+	
+	public void removeInput()
+	{
+		this.valueInput = -1;
+	}
+
+	
+	
+	/**
+	 * 
+	 * @param number
+	 * @return
+	 */
+	public boolean issetTemp(int number)
+	{
+		return tempNumbers[number - 1];
+	}
+
+	/**
+	 * 
+	 * @param number
+	 * @param isSet
+	 */
+	public void setTemp(int number, boolean isSet)
+	{
+		tempNumbers[number - 1] = isSet;
+	}
+	
+	/**
+	 * 
+	 */
+	public void reset()
+	{
+		this.valueFinal = -1;
+		this.valueInput = -1;
+		this.isCurrentlyVisible = false;
+		this.isInitiallyVisible = false;
+		for (int i = 0; i < boardSize; i++)
+		{
+			tempNumbers[i] = false;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isCorrect()
+	{
+		if (valueInput == valueMain)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private int boardSize;
+	private int valueFinal;
+	private int valueInput;
+	private boolean isInitiallyVisible;
+	private boolean isCurrentlyVisible;
+	private boolean tempNumbers[];
+	
+}

@@ -1,0 +1,377 @@
+import java.io.*;
+import java.net.*;
+
+public class Agent {
+
+	public Agent()
+	{
+		this.iterations = -1;
+		this.direction = 0;
+		
+		this.state = STATE_INITIAL;
+		this.map = new char[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
+		this.locX = (MAP_SEARCH_SIZE / 2);
+		this.locY = (MAP_SEARCH_SIZE / 2);
+		this.instructionMap = new char[]{'F', 'F', 'F', 'L', 'F'};
+		
+	}
+	
+	private void pause(int time) { try { Thread.sleep(time);} catch(InterruptedException e) { System.out.println("Interrupted"); } }
+	
+	public char get_action(char view[][])
+	{
+		//System.out.println("LocY: " + locY);
+		this.iterations++;
+		pause(800);
+		char move = 0;
+		
+		switch (this.state)
+		{
+			case STATE_INITIAL:
+				move = stateInitial(view);
+			break;
+			case STATE_UNFOGGING:
+				move = actionStateUnfogging(view);
+			break;
+			case STATE_MAKINGPATH:
+				move = actionStateMakingPath(view);
+			break;
+			case STATE_SEARCHINGGOAL:
+				move = actionStateSearchingGoal(view);
+			break;
+		}
+		
+		return move;
+		//if (iterations < instructionMap.length) { move = instructionMap[iterations]; return move; } while(true);
+		
+	}
+	
+	private char relativeChar(char view[][], int forward, int left)
+	{
+		if (Math.abs(forward) <= 2 || Math.abs(left) <= 2)
+		{
+			if (isBlank(view[MAP_VIEW_CENTRE - forward][MAP_VIEW_CENTRE - left]))
+			{
+				return '.';
+			}
+			return view[MAP_VIEW_CENTRE - forward][MAP_VIEW_CENTRE - left];
+		}
+		return OBSTACLE_WATER;
+	}
+	
+	private char stateInitial(char view[][])
+	{
+		System.out.println("Direction: " + getDirection());
+		System.out.println("Agent: (" + locX + "," + locY + ")");
+		for (int i = -MAP_VIEW_CENTRE; i <= MAP_VIEW_CENTRE; i++)
+		{
+			for (int j = -MAP_VIEW_CENTRE; j <= MAP_VIEW_CENTRE; j++)
+			{
+				if (isBlank(relativeChar(view, i, j)))
+				{
+					view[i][j] = OBSTACLE_EXPLORED;
+				}				
+				
+				if (getDirection() == DIRECTION_UP)
+				{
+					map[locY + i][locX + j] = relativeChar(view, -i, -j);
+				}
+				if (getDirection() == DIRECTION_DOWN)
+				{
+					map[locY - i][locX - j] = relativeChar(view, -i, -j);
+				}
+				if (getDirection() == DIRECTION_RIGHT)
+				{
+					map[locX - i][locY - j] = relativeChar(view, -i, -j);
+				}
+				if (getDirection() == DIRECTION_LEFT)
+				{
+					map[locY - j][locX + i] = relativeChar(view, -i, j);
+				}
+			}
+		}
+		return randomExploreMove(view);
+	}
+	
+	private char randomExploreMove(char view[][])
+	{
+		System.out.println("Hi?...");
+		if (!isObstacle(relativeChar(view, 1, 0)))
+		{
+			return actionForward();
+		}
+		else
+		{
+			return actionLeft();
+		}
+		
+		
+	}
+	
+	private char actionStateUnfogging(char view[][])
+	{
+		return 0;
+	}
+	
+	private char actionStateMakingPath(char view[][])
+	{
+		return 0;
+	}
+	
+	private char actionStateSearchingGoal(char view[][])
+	{
+		return 0;
+	}
+	
+	
+	private char actionForward()
+	{
+		
+		if (getDirection() == DIRECTION_UP) 	locY--;
+		if (getDirection() == DIRECTION_DOWN) 	locY++;
+		if (getDirection() == DIRECTION_RIGHT) 	locX++;
+		if (getDirection() == DIRECTION_LEFT) 	locX--;
+		
+		return 'F';
+	}
+	
+	private char actionLeft() { rotate(1); return 'L'; }
+	private char actionRight() { rotate(-1); return 'R'; }
+	
+	private void rotate(int direction)
+	{
+		this.direction += direction;
+		if (direction < 0) direction = (NUM_DIRECTIONS - 1);
+		if (direction >= NUM_DIRECTIONS) direction = 0;
+	}
+	
+	private boolean isObstacle(char chr)
+	{
+		if (chr == OBSTACLE_TREE || chr == OBSTACLE_DOOR || chr == OBSTACLE_WALL || chr == OBSTACLE_WATER)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean isBlank(char chr)
+	{
+		if (chr == OBSTACLE_BLANK || chr == OBSTACLE_AGENT)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private void setDirection(int direction)
+	{
+		this.direction = direction;
+	}
+	
+	private int getDirection()
+	{
+		return this.direction;
+	}
+	
+
+	private char[] instructionMap;
+	
+	private char[][] map;
+	
+	private int iterations;
+	private int direction;
+	private int state;
+	private int locX;
+	private int locY;
+
+	private static final int NUM_DIRECTIONS 	= 4;
+	private static final int DIRECTION_UP	 	= 0;
+	private static final int DIRECTION_LEFT 	= 1;
+	private static final int DIRECTION_DOWN 	= 2;
+	private static final int DIRECTION_RIGHT 	= 3;
+	
+	private static final int MAP_SEARCH_SIZE 	= 170;
+	private static final int MAP_VIEW_SIZE 		= 5;
+	private static final int MAP_VIEW_CENTRE 	= 2;
+	
+	private static final int STATE_INITIAL 		= 0;
+	private static final int STATE_UNFOGGING 	= 1;
+	private static final int STATE_MAKINGPATH 	= 2;
+	private static final int STATE_SEARCHINGGOAL= 3;
+
+	private static final char OBSTACLE_AGENT	= 0;
+	private static final char OBSTACLE_BLANK 	= ' ';
+	private static final char OBSTACLE_AGENT_DISPLAY = 'O';
+	private static final char OBSTACLE_EXPLORED	= '.';
+	private static final char OBSTACLE_TREE 	= 'T';
+	private static final char OBSTACLE_DOOR 	= '-';
+	private static final char OBSTACLE_WALL		= '*';
+	private static final char OBSTACLE_WATER 	= '~';
+	private static final char TOOL_AXE 			= 'a';
+	private static final char TOOL_KEY 			= 'k';
+	private static final char TOOL_DYNAMITE		= 'd';
+	private static final char TOOL_GOLD 		= 'g';
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+
+	private void printMap()
+	{
+		int boundLeft = MAP_SEARCH_SIZE;
+		int boundRight = 0;
+		int boundTop = MAP_SEARCH_SIZE;
+		int boundBottom = 0;
+		
+		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
+		{
+			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
+			{
+				if (!isBlank(map[i][j]))
+				{
+					if (boundLeft > i)	 boundLeft = i;
+					if (boundRight < i)	 boundRight = i;
+					if (boundTop > j)	 boundTop = j;
+					if (boundBottom < j) boundBottom = j;
+				}
+			}
+		}
+				
+		//System.out.println("L R T B " + boundLeft + " -- " + boundRight + " -- " + boundTop + " -- " + boundBottom);
+		System.out.print("   ");
+		for (int j = boundTop; j <= boundBottom; j++)
+		{
+			System.out.print(j + " ");
+		}
+		System.out.print("   \n");
+		for (int i = boundLeft; i <= boundRight; i++)
+		{
+			System.out.print(i + " ");
+			for (int j = boundTop; j <= boundBottom; j++)
+			{
+				//System.out.println("("+i+","+j+") ("+locY+","+locX+")");
+				//if (i == locY && j == locX)
+				//{
+				//	System.out.print('O');
+				//}
+				//else
+				//{
+				if (map[i][j] == 0) { map[i][j] = ' '; }
+					System.out.print(map[i][j] + "  ");
+				//}
+			}
+			System.out.print(" " + i);
+			System.out.println();
+		}
+		System.out.print("   ");
+		for (int j = boundTop; j <= boundBottom; j++)
+		{
+			System.out.print(j + " ");
+		}
+		System.out.print("   \n");
+	}
+    
+	
+	
+	
+	
+	
+	
+	
+   
+   
+   
+   
+   
+   
+   void print_view( char view[][] )
+   {
+      int i,j;
+
+      System.out.println("\n+-----+");
+      for( i=0; i < 5; i++ ) {
+         System.out.print("|");
+         for( j=0; j < 5; j++ ) {
+            if(( i == 2 )&&( j == 2 )) {
+               System.out.print('^');
+            }
+            else {
+               System.out.print( view[i][j] );
+            }
+         }
+         System.out.println("|");
+      }
+      System.out.println("+-----+");
+   }
+
+   public static void main( String[] args )
+   {
+      InputStream in  = null;
+      OutputStream out= null;
+      Socket socket   = null;
+      Agent  agent    = new Agent();
+      char   view[][] = new char[10][10];
+      char   action   = 'F';
+      int port;
+      int ch;
+      int i,j;
+
+      if( args.length < 2 ) {
+         System.out.println("Usage: java Agent -p <port>\n");
+         System.exit(-1);
+      }
+
+      port = Integer.parseInt( args[1] );
+
+      try { // open socket to Game Engine
+         socket = new Socket( "localhost", port );
+         in  = socket.getInputStream();
+         out = socket.getOutputStream();
+      }
+      catch( IOException e ) {
+         System.out.println("Could not bind to port: "+port);
+         System.exit(-1);
+      }
+      
+      try { // scan 5-by-5 wintow around current location
+         while( true ) {
+            for( i=0; i < 5; i++ ) {
+               for( j=0; j < 5; j++ ) {
+                  if( !(( i == 2 )&&( j == 2 ))) {
+                     ch = in.read();
+                     if( ch == -1 ) {
+                        System.exit(-1);
+                     }
+                     view[i][j] = (char) ch;
+                  }
+               }
+            }
+            agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
+            
+            action = agent.get_action( view );
+            out.write( action );
+            agent.printMap();
+            
+         }
+      }
+      catch( IOException e ) {
+         System.out.println("Lost connection to port: "+ port );
+         System.exit(-1);
+      }
+      finally {
+         try {
+            socket.close();
+         }
+         catch( IOException e ) {}
+      }
+   }
+   
+}
