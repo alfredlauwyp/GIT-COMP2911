@@ -1,4 +1,3 @@
-import java.awt.Point;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -7,7 +6,15 @@ import java.util.Random;
 
 public class Agent {
 
+	private boolean RANDOMSTOP;
+	
 	public Agent()
+	{
+		setFields();
+	}
+	
+	// Set all basic fields to their default values
+	private void setFields()
 	{
 		this.iterations = -1;
 		this.direction = 0;
@@ -16,135 +23,757 @@ public class Agent {
 		
 		this.map = new char[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		this.mapTemp = new boolean[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
+		this.mapTemp2 = new boolean[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		this.mapWeight = new int[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		
-		this.locX = (MAP_SEARCH_SIZE / 2);
-		this.locY = (MAP_SEARCH_SIZE / 2);
-		this.startX = this.locX;
-		this.startY = this.locY;
+		this.locX = this.startX = (MAP_SEARCH_SIZE / 2);
+		this.locY = this.startY = (MAP_SEARCH_SIZE / 2);
+		
+		this.obstacleToDynamite = new Coord(NO_POINT, NO_POINT);
+		this.obstacleToDynamiteLongTerm = this.obstacleToDynamite;
 		
 		this.firstMove = true;
-		this.findingPath = true;
+		
+		// Remove me
+		this.RANDOMSTOP = false;
+		this.lastGetToCoord = new Coord(NO_POINT, NO_POINT);
 		
 		weightedMapReset();
 	}
-	
-	private boolean findingPath;
+		
+	private void wait(int time) { try { Thread.sleep(time);} catch(InterruptedException e) { System.out.println("Interrupted"); } }
 	
 	public char get_action(char view[][])
 	{
 		this.iterations++;
-		try { Thread.sleep(100);} catch(InterruptedException e) { System.out.println("Interrupted"); }
-		
+		wait(0);
 		char move = 0;
-		if (toolCount(TOOL_GOLD) > 0)
+		addMapFeatures(view);
+		
+		if (toolHave(TOOL_GOLD))
 		{
-			if (findingPath)
-			{
-				findPath(startY, startX);
-				findingPath = false;
+			System.out.println("HAS GOLD");
+			move = getTo(startX, startY);
+		}
+		else if (canGetTo(findNearest(TOOL_GOLD).getX(), findNearest(TOOL_GOLD).getY()))
+		{
+			System.out.println("CAN GET TO GOLD which is at ("+findNearest(TOOL_GOLD).getX()+","+findNearest(TOOL_GOLD).getY()+")");
+			move = getTo(findNearest(TOOL_GOLD).getX(), findNearest(TOOL_GOLD).getY());
+		}		
+		else if (toolHave(TOOL_AXE) && viewForward() == OBSTACLE_TREE)
+		{
+			System.out.println("CAN CUT WITH AXE");
+			resetWeight(viewForwardX(), viewForwardY());
+			move = ACTION_CHOP;
+		}
+		else if (toolHave(TOOL_KEY) && viewForward() == OBSTACLE_DOOR)
+		{
+			System.out.println("CAN OPEN WITH KEY");
+			resetWeight(viewForwardX(), viewForwardY());
+			move = ACTION_OPEN;
+		}
+		else if (toolHave(TOOL_DYNAMITE) && (viewForwardX() == obstacleToDynamite.getX() && viewForwardY() == obstacleToDynamite.getY()))
+		{
+			System.out.println("CAN OPEN WITH DYNAMITE ("+viewForwardX()+","+viewForwardY()+") is ("+obstacleToDynamite.getX()+","+obstacleToDynamite.getY()+")");
+			resetWeight(viewForwardX(), viewForwardY());
+			move = ACTION_BLAST;
+			toolRemove(TOOL_DYNAMITE);
+		}
+		else
+		{
+			System.out.println("LOOKING AT STATES");
+			switch (this.state)
+			{		
+				case STATE_UNFOGGING:
+					System.out.println("State: UNFOGGING");
+					move = getUnfoggingMove(view);
+				break;
+				case STATE_TOOLUSING:
+					System.out.println("State: PATH MAKING");
+					move = getToolUsingMove(view);
+				break;
+				case STATE_FINISH:
+					System.out.println("State: FINISH");
+					while(true);
 			}
-			else
+		}
+		
+		System.out.println("Move gonna do: " + move);
+		move = checkForTools(relativeChar(view, 1, 0), move); //Check if the item in front of you is a tool
+		doAction(move); // Carry out the decided action
+		return move;		
+	}
+	
+	
+	
+	private Coord findNearest(char chr)
+	{
+		int itemY = NO_POINT;
+		int itemX = NO_POINT;
+		for (int i = mapBoundLeft; i < mapBoundRight; i++)
+		{
+			for (int j = mapBoundTop; j < mapBoundBottom; j++)
 			{
-				if (findPathResult.size() == 0)
+				if (map[i][j] == chr)
 				{
-					findingPath = true;
+					itemY = i;
+					itemX = j;
 				}
-				
-				System.out.println("(" + (int)findPathResult.get(0).getX() + "," + (int)findPathResult.get(0).getY() + ")");
-				int xCoord = (int)findPathResult.get(0).getX();
-				int yCoord = (int)findPathResult.get(0).getY();
-				if (locY - 1 == xCoord && locX == yCoord)
-				{
-					//System.out.println("Trying to go up");
-					// move up 
-					if (getDirection() == DIRECTION_UP)
-					{
-						findPathResult.remove(0);
-						move = ACTION_MOVEFORWARD;
-					}
-					else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNLEFT;
-					else move = ACTION_TURNRIGHT;
-				}
-				else if (locY + 1 == xCoord  && locX == yCoord)
-				{
-					System.out.println("Trying to go down (" + getDirection() + " -- " + DIRECTION_DOWN + ")");
-					// Move down
-					if (getDirection() == DIRECTION_DOWN)
-					{
-						findPathResult.remove(0);
-						move = ACTION_MOVEFORWARD;
-					}
-					else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNRIGHT;
-					else move = ACTION_TURNLEFT;
-				}
-				else if (locY == xCoord && locX - 1== yCoord)
-				{
-					//System.out.println("Trying to go left");
-					// Move left
-					if (getDirection() == DIRECTION_LEFT)
-					{
-						findPathResult.remove(0);
-						move = ACTION_MOVEFORWARD;
-					}
-					else if (getDirection() == DIRECTION_UP) move = ACTION_TURNLEFT;
-					else move = ACTION_TURNRIGHT;
-				}
-				else if (locY == xCoord && locX + 1 == yCoord)
-				{
-					//System.out.println("Trying to go right");
-					// Move right
-					if (getDirection() == DIRECTION_RIGHT)
-					{
-						findPathResult.remove(0);
-						move = ACTION_MOVEFORWARD;
-					}
-					else if (getDirection() == DIRECTION_DOWN) move = ACTION_TURNLEFT;
-					else move = ACTION_TURNRIGHT;
-				}
-					
-			}	
+			}
+		}
+		Coord p = new Coord(itemY, itemX);
+		return p;
+	}
+	private Coord lastGetToCoord;
+	
+	private char getTo(int x, int y)
+	{
+		System.out.println("--GET TO-- at ("+findNearest(TOOL_GOLD).getX()+","+findNearest(TOOL_GOLD).getY()+")");
+		char move = 0;
+		if (lastGetToCoord.getX() != x || lastGetToCoord.getY() != y)
+		{
+			System.out.println("Finding Path");
+			findPath(x, y);			
+			printPathHistory(findPathResult);
 			
 		}
 		else
 		{
-			switch (this.state)
+			System.out.println("Found Path");
+			printPathHistory(findPathResult);
+			int xCoord = findPathResult.get(0).getX();
+			int yCoord = findPathResult.get(0).getY();
+			System.out.println("=== Findign correct move ("+locY+","+locX+") ("+xCoord+","+yCoord+")");
+			if (locY - 1 == xCoord && locX == yCoord) // Up
+			{ 
+				if (getDirection() == DIRECTION_UP)
+				{
+					findPathResult.remove(0);
+					move = ACTION_MOVEFORWARD;
+				}
+				else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNLEFT;
+				else move = ACTION_TURNRIGHT;
+			}
+			else if (locY + 1 == xCoord  && locX == yCoord)
 			{
-				case STATE_UNFOGGING:
-					move = getUnfoggingMove(view);
-				break;
-				case STATE_MAKINGPATH:
-					while(true);//move = getPathMakingMove(view);
-				//break;
-				case STATE_SEARCHINGGOAL:
-					move = getGoalSearchingMove(view);
-				break;
-			}	
+				if (getDirection() == DIRECTION_DOWN) // Down
+				{
+					findPathResult.remove(0);
+					move = ACTION_MOVEFORWARD;
+				}
+				else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNRIGHT;
+				else move = ACTION_TURNLEFT;
+			}
+			else if (locY == xCoord && locX - 1== yCoord) // Left
+			{
+				if (getDirection() == DIRECTION_LEFT)
+				{
+					findPathResult.remove(0);
+					move = ACTION_MOVEFORWARD;
+				}
+				else if (getDirection() == DIRECTION_UP) move = ACTION_TURNLEFT;
+				else move = ACTION_TURNRIGHT;
+			}
+			else if (locY == xCoord && locX + 1 == yCoord) // Right
+			{
+				if (getDirection() == DIRECTION_RIGHT)
+				{
+					findPathResult.remove(0);
+					move = ACTION_MOVEFORWARD;
+				}
+				else if (getDirection() == DIRECTION_DOWN) move = ACTION_TURNLEFT;
+				else move = ACTION_TURNRIGHT;
+			}
+	
 		}
-		doAction(move);
+		lastGetToCoord.setX(x);
+		lastGetToCoord.setY(y);
+		System.out.println("Move: " + move);
 		return move;
+	}	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private boolean canGetTo(int x, int y)
+	{
+		if (isPoint(x) && isPoint(y))
+		{
+			System.out.println("========================================= POINT FOUND ("+x+","+y+")");
+			resetTempMap();
+			return canGetToR(startX, startY, x, y);
+		}
+		System.out.println("========================================= NOT A POINT FOUND");
+		return false; // If no points are passed,
 		
 	}
 	
-	private char relativeChar(char view[][], int forward, int left)
+	private boolean canGetToR(int x, int y, int finalX, int finalY)
 	{
-		if (Math.abs(forward) <= 2 || Math.abs(left) <= 2)
+		addTempMap(x,y);
+		char item = map[finalX][finalY];
+		boolean result = false;
+		
+		if (map[x][y] == item) return true;		
+		
+		if (!inTempMap(x+1,y) && result == false && !isWater(map[x+1][y]) && (!isObstacle(map[x + 1][y]) || (x+1==finalX && y==finalY)) && !isBlank(map[x + 1][y]))
 		{
-			if (isBlank(view[MAP_VIEW_CENTRE - forward][MAP_VIEW_CENTRE - left]))
-			{
-				return '.';
-			}
-			return view[MAP_VIEW_CENTRE - forward][MAP_VIEW_CENTRE - left];
+			result = canGetToR(x+1,y, finalX, finalY); // down
 		}
-		return OBSTACLE_WATER;
+		if (!inTempMap(x-1,y) && result == false && !isWater(map[x-1][y]) &&(!isObstacle(map[x - 1][y]) || (x-1==finalX && y==finalY)) && !isBlank(map[x - 1][y]))
+		{
+			result = canGetToR(x-1,y, finalX, finalY); // up
+		}		
+		if (!inTempMap(x,y+1) && result == false && !isWater(map[x][y+1]) &&(!isObstacle(map[x][y+1]) || (x==finalX && y+1==finalY)) && !isBlank(map[x][y + 1]))
+		{
+			result = canGetToR(x,y+1, finalX, finalY); // right
+		}
+		if (!inTempMap(x,y-1) && result == false && !isWater(map[x][y-1]) &&(!isObstacle(map[x][y - 1]) || (x==finalX && y-1==finalY)) && !isBlank(map[x][y - 1]))
+		{
+			result = canGetToR(x,y - 1, finalX, finalY); // left 
+		}		
+		return result;
 	}
+	
+	
+	
+	
+	
+	private Coord obstacleToDynamite;
+	private Coord obstacleToDynamiteLongTerm;
+	
+	private boolean canGetToBehindObstacle()
+	{
+		System.out.println("========================================= HOW CAN WE USE DYNAMITE?");
+		boolean solution = false;
+		
+		char items[] = {TOOL_GOLD, TOOL_DYNAMITE, TOOL_AXE, TOOL_KEY};
+		
+		int count = 0;
+		while (!solution && count < items.length)
+		{
+			resetTempMap();
+			
+			// Note this
+			int obsX = obstacleToDynamiteLongTerm.getX();
+			int obsY = obstacleToDynamiteLongTerm.getY();
+			
+			System.out.println("Checking if point! " +obstacleToDynamiteLongTerm);
+			if (isPoint(obsX) && isPoint(obsY))
+			{
+				System.out.println("Is Point! " +obstacleToDynamiteLongTerm + " is " + map[obsX][obsY] + " equal to " + toolToObstacle(items[count]));
+				if (map[obsX][obsY] == toolToObstacle(items[count]))
+				{
+					System.out.println("Stay!! " +obstacleToDynamiteLongTerm);
+					obstacleToDynamite = obstacleToDynamiteLongTerm;
+					return true;
+				}
+			}			
+			
+			obstacleToDynamite = new Coord(NO_POINT, NO_POINT);
+			solution = canGetToBehindObstacleR(locY, locX, 1, items[count]);
+			System.out.println("Solution: " + solution + " for "+items[count]+" towards " + obstacleToDynamite);
+			count++;
+		}
+		System.out.println("Solution: " + items[count-1] + " towards " + obstacleToDynamite);
+		obstacleToDynamiteLongTerm = obstacleToDynamite;
+		return solution;
+	}
+	
+	private boolean canGetToBehindObstacleR(int x, int y, int getOutOfJailFree, char itemOfInterest)
+	{
+		boolean result = false;
+		if (getOutOfJailFree == 1)
+		{
+			addTempMap(x,y);
+			resetTempMap2();
+		}
+		else
+		{
+			addTempMap2(x, y);
+		}
+		
+		//printMap();
+		//printTempMap();
+		//printTempMap2();
+		
+		if (map[x][y] == itemOfInterest) return true;		
+		
+		if (!result) { result = canGetToBehindObstacleRInterim(x+1, y, getOutOfJailFree, itemOfInterest); } // down
+		if (!result) { result = canGetToBehindObstacleRInterim(x-1, y, getOutOfJailFree, itemOfInterest); } // up
+		if (!result) { result = canGetToBehindObstacleRInterim(x, y+1, getOutOfJailFree, itemOfInterest); } // right
+		if (!result) { result = canGetToBehindObstacleRInterim(x, y-1, getOutOfJailFree, itemOfInterest); } // left		
+		
+		return result;
+	}
+	
+	private boolean canGetToBehindObstacleRInterim(int x, int y, int getOutOfJailFree, char itemOfInterest)
+	{
+		//System.out.print("("+x+","+y+") gOOJF: " + getOutOfJailFree + " .. isObstacle? " + map[x][y] + " .... CanGetThere: "+(!inTempMap(x,y) && !inTempMap2(x,y) && !isWater(map[x][y]) && (!isObstacle(map[x][y]) || getOutOfJailFree > 0) && !isBlank(map[x][y]))+"\n");
+		if (!inTempMap(x,y) && !isWater(map[x][y]) && (!isObstacle(map[x][y]) || getOutOfJailFree > 0) && !isBlank(map[x][y]))
+		{			
+			if (getOutOfJailFree > 0)
+			{
+				if (isObstacle(map[x][y]))
+				{
+					obstacleToDynamite = new Coord(x, y);
+					getOutOfJailFree--;
+				}
+				return canGetToBehindObstacleR(x,y, getOutOfJailFree, itemOfInterest);
+			}
+			else if (!inTempMap2(x,y))
+			{
+				return canGetToBehindObstacleR(x,y, getOutOfJailFree, itemOfInterest);
+			}	 
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private void printPathHistory(ArrayList<Coord> pathHistory)
+	{
+		for (int i = 0; i < pathHistory.size(); i++)
+		{
+			System.out.print("(" + (int)pathHistory.get(i).getX() + "," + (int)pathHistory.get(i).getY() + "), ");
+		}
+	}
+	
+	private void findPath(int x, int y)
+	{
+		ArrayList<Coord> pathHistory = new ArrayList<Coord>();
+		resetTempMap();
+		System.out.println("=== FIND PATH to ("+x+","+y+")===");
+		findPathR(locY, locX, x, y, pathHistory);		
+	}
+	
+	private boolean findPathR(int x, int y, int xGoal, int yGoal, ArrayList<Coord> pathHistory)
+	{
+		ArrayList<Coord> pathHistoryClone = new ArrayList<Coord>(pathHistory);
+		System.out.print("FINDPATHR: At point ("+x+","+y+") ("+map[x][y]+"), looking for goal ("+xGoal+","+yGoal+")\n");
+		addTempMap(x,y);
+		boolean result = false;
+		if (x == xGoal && y == yGoal)
+		{
+			result = true;
+			System.out.println("=====Found Goal!\n=====\n======\n======\n======");
+			findPathResult = pathHistoryClone;
+			
+			// Holy fuck please lord forgive me for the below
+			// This strips away the (x,x) coordinates that don't get pruned in the DFS
+			boolean finishedRemoving = false;
+			while (!finishedRemoving)
+			{
+				finishedRemoving = true;
+				for (int i = 0; i < findPathResult.size(); i++)
+				{
+					if (i < findPathResult.size() - 1)
+					{
+						int xCo1 = (int)findPathResult.get(i).getX();
+						int yCo1 = (int)findPathResult.get(i).getY();
+						int xCo2 = (int)findPathResult.get(i+1).getX();
+						int yCo2 = (int)findPathResult.get(i+1).getY();
+						if ((Math.abs(xCo2 - xCo1) > 0 && Math.abs(yCo2 - yCo1) > 0) || Math.abs(yCo2 - yCo1) > 1 || Math.abs(xCo2 - xCo1) > 1)
+						{
+							System.out.print("\nPREVIOUS: ");printPathHistory(findPathResult);
+							System.out.print("\nCUTTING: " + findPathResult.get(i));
+							findPathResult.remove(i);
+							System.out.print("\nAFTER: ");printPathHistory(findPathResult);
+							finishedRemoving = false;
+							break;
+						}
+					}
+				}
+			}
+			
+		}
+		if (!result)
+		{
+			System.out.println("No result yet");
+			if (xGoal > x && Math.abs(xGoal - x) > Math.abs(yGoal - y))
+			{
+				System.out.println("Up");
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+			else if (yGoal > y && Math.abs(xGoal - x) < Math.abs(yGoal - y))
+			{
+				System.out.println("Down");
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+			}
+			else if (xGoal < x && Math.abs(xGoal - x) > Math.abs(yGoal - y))
+			{
+				System.out.println("Left");
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+			else if (yGoal < y && Math.abs(xGoal - x) < Math.abs(yGoal - y))
+			{
+				System.out.println("Right");
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+			else
+			{
+				System.out.println("Else");
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+			}
+		}
+		
+		return result;
+	}
+	
+	private ArrayList<Coord> findPathResult;
+	
+	private boolean findPathRinterim(int x, int y, int xGoal, int yGoal, ArrayList<Coord> pathHistory)
+	{
+		if (!inTempMap(x,y) && !isWater(map[x][y]) && (!isObstacle(map[x][y]) || (x == xGoal && y == yGoal)) && !isBlank(map[x][y]))
+		{
+			pathHistory.add(new Coord(x, y));
+			return findPathR(x, y, xGoal, yGoal, pathHistory);
+		}
+		return false;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	// ==============================================================================
+	// =========================== STATE 1: Unfogging ===============================
+	// ==============================================================================
+		
+	private char getUnfoggingMove(char view[][])
+	{
+		char move = 0;
+		
+		if (this.allSpacesExplored())
+		{
+			changeState(STATE_TOOLUSING);
+		}
+		else
+		{
+			if (firstMove) {
+				weightedMap();
+				firstMove = false;
+			}
+			move = turnTowards();
+			if (move == 0)
+			{
+				weightedMap();
+				move = ACTION_MOVEFORWARD;
+			}		
+		}
+		return move;
+	}
+
+	// ==============================================================================
+	// =========================== STATE 2: Tool Using =============================
+	// ==============================================================================
+		
+	private char getToolUsingMove(char view[][])
+	{
+		char move = 0;
+		if (!toolHave(TOOL_AXE) && canGetTo(findNearest(TOOL_AXE).getX(), findNearest(TOOL_AXE).getY()))
+		{
+			System.out.println("=== 1");
+			move = getTo(findNearest(TOOL_AXE).getX(), findNearest(TOOL_AXE).getY());
+		}
+		else if (toolHave(TOOL_AXE) && canGetTo(findNearest(OBSTACLE_TREE).getX(), findNearest(OBSTACLE_TREE).getY()))
+		{
+			System.out.println("=== 2");
+			move = getTo(findNearest(OBSTACLE_TREE).getX(), findNearest(OBSTACLE_TREE).getY());
+			System.out.println("Move FOR AXE: " + move);
+		}
+		else if (!toolHave(TOOL_KEY) && canGetTo(findNearest(TOOL_KEY).getX(), findNearest(TOOL_KEY).getY()))
+		{
+			System.out.println("=== 3");
+			move = getTo(findNearest(TOOL_KEY).getX(), findNearest(TOOL_KEY).getY());
+		}
+		else if (toolHave(TOOL_KEY) && canGetTo(findNearest(OBSTACLE_DOOR).getX(), findNearest(OBSTACLE_DOOR).getY()))
+		{
+			System.out.println("=== 4");
+			move = getTo(findNearest(OBSTACLE_DOOR).getX(), findNearest(OBSTACLE_DOOR).getY());
+		}
+		else if (!toolHave(TOOL_DYNAMITE) && canGetTo(findNearest(TOOL_DYNAMITE).getX(), findNearest(TOOL_DYNAMITE).getY()))
+		{
+			System.out.println("=== 5");
+			move = getTo(findNearest(TOOL_DYNAMITE).getX(), findNearest(TOOL_DYNAMITE).getY());
+		}
+		else if (toolHave(TOOL_DYNAMITE) && canGetToBehindObstacle())
+		{
+			System.out.println("=== 6");
+			System.out.println("\n\n"+obstacleToDynamite+"\n\n");
+			move = getTo(obstacleToDynamite.getX(), obstacleToDynamite.getY());
+		}
+		else
+		{
+			System.out.println("=== CHANGING STATE BACK");
+			changeState(STATE_UNFOGGING);
+		}
+		return move;
+	}
+	
+	// ==============================================================================
+	// =========================== Checking if Explored =============================
+	// ==============================================================================
+
+	private boolean allSpacesExplored()
+	{
+		resetTempMap();
+		return spaceExplored(this.startX, this.startY);
+	}
+	
+	private boolean spaceExplored(int x, int y)
+	{
+		addTempMap(x,y);
+		boolean result = true;
+		
+		if (isBlank(map[x+2][y - 2])) result = false;	
+		if (isBlank(map[x+2][y - 1])) result = false;	
+		if (isBlank(map[x+2][y])) result = false;		
+		if (isBlank(map[x+2][y + 1])) result = false;	
+		if (isBlank(map[x+2][y + 2])) result = false;
+		
+		if (isBlank(map[x+1][y - 2])) result = false;
+		if (isBlank(map[x+1][y - 1])) result = false;
+		if (isBlank(map[x+1][y])) result = false;	
+		if (isBlank(map[x+1][y + 1])) result = false;
+		if (isBlank(map[x+1][y + 2])) result = false;
+		
+		if (isBlank(map[x][y - 2])) result = false;
+		if (isBlank(map[x][y - 1])) result = false;
+		if (isBlank(map[x][y])) result = false;		
+		if (isBlank(map[x][y + 1])) result = false;
+		if (isBlank(map[x][y + 2])) result = false;
+		
+		if (isBlank(map[x-1][y - 2])) result = false;
+		if (isBlank(map[x-1][y - 1])) result = false;
+		if (isBlank(map[x-1][y])) result = false;	
+		if (isBlank(map[x-1][y + 1])) result = false;
+		if (isBlank(map[x-1][y + 2])) result = false;
+		
+		if (isBlank(map[x-2][y - 2])) result = false;
+		if (isBlank(map[x-2][y - 1])) result = false;
+		if (isBlank(map[x-2][y])) result = false;	
+		if (isBlank(map[x-2][y + 1])) result = false;
+		if (isBlank(map[x-2][y + 2])) result = false;
+		
+		if (!inTempMap(x+1,y) && result == true && !isWater(map[x+1][y]) &&!isObstacle(map[x + 1][y]))
+		{
+			result = spaceExplored(x+1,y); // down
+		}
+		if (!inTempMap(x-1,y) && result == true && !isWater(map[x-1][y]) &&!isObstacle(map[x - 1][y]))
+		{
+			result = spaceExplored(x-1,y); // up
+		}		
+		if (!inTempMap(x,y+1) && result == true && !isWater(map[x][y+1]) &&!isObstacle(map[x][y + 1]))
+		{
+			result = spaceExplored(x,y+1); // right
+		}
+		if (!inTempMap(x,y-1) && result == true && !isWater(map[x][y-1]) &&!isObstacle(map[x][y - 1]))
+		{
+			result = spaceExplored(x,y - 1); // left
+		}
+		
+		return result;
+	}
+
+	// ==============================================================================
+	// =============================== Temporar. Map=================================
+	// ==============================================================================
+
+	private boolean inTempMap(int x, int y)
+	{
+		return mapTemp[x][y];
+	}
+	
+	private void addTempMap(int x, int y)
+	{
+		mapTemp[x][y] = true;
+	}
+	
+	private void resetTempMap()
+	{
+		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
+		{
+			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
+			{
+				mapTemp[i][j] = false;
+			}
+		}
+	}
+	
+	private boolean inTempMap2(int x, int y)
+	{
+		return mapTemp2[x][y];
+	}
+	
+	private void addTempMap2(int x, int y)
+	{
+		mapTemp2[x][y] = true;
+	}
+	
+	private void resetTempMap2()
+	{
+		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
+		{
+			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
+			{
+				mapTemp2[i][j] = false;
+			}
+		}
+	}
+		
+	// ==============================================================================
+	// =============================== Weighted Map =================================
+	// ==============================================================================
+
+	private void weightedMapReset()
+	{
+		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
+		{
+			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
+			{
+				mapWeight[i][j] = INITIAL_WEIGHT;
+			}
+		}
+	}
+	
+	private int greatestAdjacentWeight()
+	{
+		int greatestDirection = DIRECTION_RELATIVE_FORWARD;
+		int greatest = viewForwardWeight();
+		if (viewRightWeight() > greatest) 		greatestDirection = DIRECTION_RELATIVE_RIGHT;
+		if (viewBackwardWeight() > greatest)	greatestDirection = DIRECTION_RELATIVE_BACKWARD;
+		if (viewLeftWeight() > greatest)		greatestDirection = DIRECTION_RELATIVE_LEFT;
+		return greatestDirection;
+	}
+	
+	private void resetWeight(int x, int y)
+	{
+		System.out.println("Trying to reset ("+x+","+y+")");
+		mapWeight[x][y] = INITIAL_WEIGHT;
+	}
+	
+	private void weightedMap()
+	{
+		mapWeight[locY][locX] -= 9;
+		
+		mapWeight[locY - 1][locX] -= 2;
+		mapWeight[locY + 1][locX] -= 2;
+		mapWeight[locY][locX - 1] -= 2;
+		mapWeight[locY][locX + 1] -= 2;
+		mapWeight[locY - 1][locX + 1] -= 2;
+		mapWeight[locY - 1][locX - 1] -= 2;
+		mapWeight[locY + 1][locX + 1] -= 2;
+		mapWeight[locY + 1][locX - 1] -= 2;
+		
+		mapWeight[locY + 2][locX] -= 1;
+		mapWeight[locY + 2][locX + 1] -= 1;
+		mapWeight[locY + 2][locX + 2] -= 1;
+		mapWeight[locY + 2][locX - 1] -= 1;
+		mapWeight[locY + 2][locX - 2] -= 1;
+		
+		mapWeight[locY - 2][locX] -= 1;
+		mapWeight[locY - 2][locX + 1] -= 1;
+		mapWeight[locY - 2][locX + 2] -= 1;
+		mapWeight[locY - 2][locX - 1] -= 1;
+		mapWeight[locY - 2][locX - 2] -= 1;
+		
+		mapWeight[locY - 1][locX + 2] -= 1;
+		mapWeight[locY - 1][locX - 2] -= 1;
+		mapWeight[locY + 1][locX + 2] -= 1;
+		mapWeight[locY + 1][locX - 2] -= 1;
+		mapWeight[locY][locX + 2] -= 1;
+		mapWeight[locY][locX - 2] -= 1;
+		
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
+		{
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+			{
+				if (isObstacle(map[i][j]) || isWater(map[i][j]))
+				{
+					mapWeight[i][j] = -1;
+				}
+				else if (mapWeight[i][j] < 0)
+				{
+					mapWeight[i][j] = 0;
+				}	
+			}
+		}
+	}
+	
+	// ==============================================================================
+	// ======================= Adding Map / Item Features ===========================
+	// ==============================================================================
 	
 	private void addMapFeatures(char view[][])
 	{
-		checkForTools(view[MAP_VIEW_SPACE_INFRONT_X][MAP_VIEW_SPACE_INFRONT_Y]);
-		for (int i = -MAP_VIEW_CENTRE; i <= MAP_VIEW_CENTRE; i++)
+		for (int i = -MAP_VIEW_HALF_SIZE; i <= MAP_VIEW_HALF_SIZE; i++)
 		{
-			for (int j = -MAP_VIEW_CENTRE; j <= MAP_VIEW_CENTRE; j++)
+			for (int j = -MAP_VIEW_HALF_SIZE; j <= MAP_VIEW_HALF_SIZE; j++)
 			{
 				if (isBlank(relativeChar(view, i, j)))
 				{
@@ -190,418 +819,41 @@ public class Agent {
 		}
 	}
 	
-	private void checkForTools(char chr)
+	private char checkForTools(char chr, char prevMove)
 	{
+		char move = prevMove;
 		if (isTool(chr))
 		{
 			toolAdd(chr);
-			if (getDirection() == DIRECTION_UP)
-			{
-				System.out.println("========================UP!");
-				map[locY - 1][locX] = OBSTACLE_EXPLORED;
-			}
-			if (getDirection() == DIRECTION_DOWN)
-			{
-				System.out.println("========================DOWN!");
-				map[locY + 1][locX] = OBSTACLE_EXPLORED;
-			}
-			if (getDirection() == DIRECTION_LEFT) 
-			{
-				System.out.println("========================LEFT!");
-				map[locY][locX - 1] = OBSTACLE_EXPLORED;
-			}
-			if (getDirection() == DIRECTION_RIGHT)
-			{
-				System.out.println("========================RIGHT! ("+locY+","+(locX + 1)+")");
-				map[locY][locX + 1] = OBSTACLE_EXPLORED;
-			}
-		}
-	}
-	
-	// ==============================================================================
-	// =========================== STATE 1: Unfogging ===============================
-	// ==============================================================================
-	
-	private char getUnfoggingMove(char view[][])
-	{
-		addMapFeatures(view);
-		
-		if (this.allSpacesExplored())
-		{
-			changeState(STATE_MAKINGPATH);
-		}
-		else
-		{
-			return headTowards(getGreatestMapWeightX(), getGreatestMapWeightY());
-		}		
-		return 0;
-	}
-	
-	private char headTowards(int x, int y)
-	{
-		if (firstMove) { weightedMap(); firstMove = false;}
-		char move = 0;
-		move = turnTowards();
-		if (move == 0)
-		{
-			weightedMap();
-			System.out.println("Tits");
+			if (getDirection() == DIRECTION_UP) 	map[locY - 1][locX] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_DOWN)	map[locY + 1][locX] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_LEFT) 	map[locY][locX - 1] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_RIGHT)	map[locY][locX + 1] = OBSTACLE_EXPLORED;
 			move = ACTION_MOVEFORWARD;
-		}		
+		}
 		return move;
 	}
-	private boolean firstMove;
-	
-	private char turnTowards()
-	{		
-		int turnDirection = greatestAdjacentWeight();
-		if (turnDirection == DIRECTION_RELATIVE_LEFT)
-		{
-			return ACTION_TURNLEFT;
-		}
-		if (turnDirection == DIRECTION_RELATIVE_RIGHT)
-		{
-			return ACTION_TURNRIGHT;
-		}
-		if (turnDirection == DIRECTION_RELATIVE_BACKWARD)
-		{
-			return ACTION_TURNLEFT;
-		}
-		return 0;
-	}
-	
-	private int getGreatestMapWeightX()
-	{
-		return this.greatestMapWeightX;
-	}
-	
-	private int getGreatestMapWeightY()
-	{
-		return this.greatestMapWeightX;
-	}
-	
-	private void weightedMapReset()
-	{
-		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
-		{
-			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
-			{
-				mapWeight[i][j] = 50;
-			}
-		}
-	}
-	
-	private int greatestAdjacentWeight()
-	{
-		int greatestDirection = DIRECTION_RELATIVE_FORWARD;
-		int greatest = viewForwardWeight();
-		if (viewRightWeight() > greatest)
-		{	
-			greatestDirection = DIRECTION_RELATIVE_RIGHT;
-		}
-		if (viewBackwardWeight() > greatest)
-		{
-			greatestDirection = DIRECTION_RELATIVE_BACKWARD;
-		}
-		if (viewLeftWeight() > greatest)
-		{
-			greatestDirection = DIRECTION_RELATIVE_LEFT;
-		}
-		return greatestDirection;
-	}
-	
-	private void weightedMap()
-	{
-		mapWeight[locY][locX] -= 9;
 		
-		mapWeight[locY - 1][locX] -= 2;
-		mapWeight[locY + 1][locX] -= 2;
-		mapWeight[locY][locX - 1] -= 2;
-		mapWeight[locY][locX + 1] -= 2;
-		mapWeight[locY - 1][locX + 1] -= 2;
-		mapWeight[locY - 1][locX - 1] -= 2;
-		mapWeight[locY + 1][locX + 1] -= 2;
-		mapWeight[locY + 1][locX - 1] -= 2;
-		
-		mapWeight[locY + 2][locX] -= 1;
-		mapWeight[locY + 2][locX + 1] -= 1;
-		mapWeight[locY + 2][locX + 2] -= 1;
-		mapWeight[locY + 2][locX - 1] -= 1;
-		mapWeight[locY + 2][locX - 2] -= 1;
-		
-		mapWeight[locY - 2][locX] -= 1;
-		mapWeight[locY - 2][locX + 1] -= 1;
-		mapWeight[locY - 2][locX + 2] -= 1;
-		mapWeight[locY - 2][locX - 1] -= 1;
-		mapWeight[locY - 2][locX - 2] -= 1;
-		
-		mapWeight[locY - 1][locX + 2] -= 1;
-		mapWeight[locY - 1][locX - 2] -= 1;
-		mapWeight[locY + 1][locX + 2] -= 1;
-		mapWeight[locY + 1][locX - 2] -= 1;
-		mapWeight[locY][locX + 2] -= 1;
-		mapWeight[locY][locX - 2] -= 1;
-		
-		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
-		{
-			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
-			{
-				if (isTool(map[i][j]))
-				{
-					//mapWeight[i][j] += 5;
-				}				
-				if (isObstacle(map[i][j]))
-				{
-					mapWeight[i][j] = -1;
-				}
-				else if (mapWeight[i][j] < 0)
-				{
-					mapWeight[i][j] = 0;
-				}	
-			}
-		}
-	}
-	
-	private int numBlanksAround(int x, int y)
-	{
-		int counts = 0;
-		if (isBlank(map[x + 1][y])) counts++;
-		if (isBlank(map[x - 1][y])) counts++;
-		if (isBlank(map[x][y + 1])) counts++;
-		if (isBlank(map[x][y - 1])) counts++;
-		return counts;
-	}
-	
-	private boolean allSpacesExplored()
-	{
-		resetTempMap();
-		boolean explored = spaceExplored(this.startX, this.startY);
-		System.out.println("Explored all possible map? " + explored);
-		return explored;
-	}
-	
-	private boolean spaceExplored(int x, int y)
-	{
-		addTempMap(x,y);
-		//System.out.println("Recursive Call");
-		boolean result = true;
-		
-		if (isBlank(map[x+2][y - 2])) result = false;	
-		if (isBlank(map[x+2][y - 1])) result = false;	
-		if (isBlank(map[x+2][y])) result = false;		
-		if (isBlank(map[x+2][y + 1])) result = false;	
-		if (isBlank(map[x+2][y + 2])) result = false;
-		
-		if (isBlank(map[x+1][y - 2])) result = false;
-		if (isBlank(map[x+1][y - 1])) result = false;
-		if (isBlank(map[x+1][y])) result = false;	
-		if (isBlank(map[x+1][y + 1])) result = false;
-		if (isBlank(map[x+1][y + 2])) result = false;
-		
-		if (isBlank(map[x][y - 2])) result = false;
-		if (isBlank(map[x][y - 1])) result = false;
-		if (isBlank(map[x][y])) result = false;		
-		if (isBlank(map[x][y + 1])) result = false;
-		if (isBlank(map[x][y + 2])) result = false;
-		
-		if (isBlank(map[x-1][y - 2])) result = false;
-		if (isBlank(map[x-1][y - 1])) result = false;
-		if (isBlank(map[x-1][y])) result = false;	
-		if (isBlank(map[x-1][y + 1])) result = false;
-		if (isBlank(map[x-1][y + 2])) result = false;
-		
-		if (isBlank(map[x-2][y - 2])) result = false;
-		if (isBlank(map[x-2][y - 1])) result = false;
-		if (isBlank(map[x-2][y])) result = false;	
-		if (isBlank(map[x-2][y + 1])) result = false;
-		if (isBlank(map[x-2][y + 2])) result = false;
-		
-		// Search Downward
-		if (!inTempMap(x+1,y) && result == true)
-		{
-			//System.out.println("Down");
-			if (!isObstacle(map[x + 1][y]))
-			{
-				result = spaceExplored(x+1,y);
-			}
-		}
-		if (!inTempMap(x-1,y) && result == true)
-		{
-			//System.out.println("Up");
-			if (!isObstacle(map[x - 1][y]))
-			{
-				result = spaceExplored(x-1,y);
-			}
-		}		
-		if (!inTempMap(x,y+1) && result == true)
-		{
-			//System.out.println("Right");
-			if (!isObstacle(map[x][y + 1]))
-			{
-				result = spaceExplored(x,y+1);
-			}
-		}
-		if (!inTempMap(x,y-1) && result == true)
-		{
-			//System.out.println("Left");
-			if (!isObstacle(map[x][y - 1]))
-			{
-				result = spaceExplored(x,y - 1);
-			}
-		}
-		
-		return result;
-	}
-	
-	private boolean inTempMap(int x, int y)
-	{
-		return mapTemp[x][y];
-	}
-	
-	private void addTempMap(int x, int y)
-	{
-		//System.out.println("Adding to temp map ("+x+","+y+")");
-		mapTemp[x][y] = true;
-	}
-	
-	private void resetTempMap()
-	{
-		for (int i = 0; i < MAP_SEARCH_SIZE; i++)
-		{
-			for (int j = 0; j < MAP_SEARCH_SIZE; j++)
-			{
-				mapTemp[i][j] = false;
-			}
-		}
-	}
-	
-	private void findPath(int x, int y)
-	{
-		ArrayList<Point> pathHistory = new ArrayList<Point>();
-		System.out.println("Finding Path to ("+x+","+y+")!");
-		resetTempMap();
-		
-		findPathR(locY, locX, x, y, pathHistory);		
-	}
-	
-	private void printPathHistory(ArrayList<Point> pathHistory)
-	{
-		for (int i = 0; i < pathHistory.size(); i++)
-		{
-			System.out.print("(" + (int)pathHistory.get(i).getX() + "," + (int)pathHistory.get(i).getY() + "), ");
-		}
-	}
-	
-	private boolean findPathR(int x, int y, int xGoal, int yGoal, ArrayList<Point> pathHistory)
-	{
-		ArrayList<Point> pathHistoryClone = new ArrayList<Point>(pathHistory);
-		//System.out.print("At point ("+x+","+y+")\n");
-		addTempMap(x,y);
-		boolean result = false;
-		if (x == xGoal && y == yGoal)
-		{
-			result = true;
-			//System.out.println("Found Goal! ");
-			findPathResult = pathHistoryClone;
-			
-			// Holy fuck please lord forgive me for the below
-			// This strips away the (x,x) coordinates that don't get pruned in the DFS
-			boolean finishedRemoving = false;
-			while (!finishedRemoving)
-			{
-				finishedRemoving = true;
-				for (int i = 0; i < findPathResult.size(); i++)
-				{
-					if (i < findPathResult.size() - 1)
-					{
-						int xCo1 = (int)findPathResult.get(i).getX();
-						int yCo1 = (int)findPathResult.get(i).getY();
-						int xCo2 = (int)findPathResult.get(i+1).getX();
-						int yCo2 = (int)findPathResult.get(i+1).getY();
-						if (
-						 (xCo2 == xCo1 + 2 && yCo2 == yCo1) || 
-						 (yCo2 == yCo1 + 2 && xCo2 == xCo1) ||
-						 (xCo2 == xCo1 - 2 && yCo2 == yCo1) ||
-						 (yCo2 == yCo1 - 2 && xCo2 == xCo1)
-						)
-						{
-							System.out.println("HALLO!!!");
-							findPathResult.remove(i);
-							finishedRemoving = false;
-							break;
-						}
-					}
-				}
-			}
-		}
-		if (!result)
-		{
-			if (xGoal > x && Math.abs(xGoal - x) >= Math.abs(yGoal - y))
-			{
-				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
-			}
-			else if (yGoal > y && Math.abs(xGoal - x) <= Math.abs(yGoal - y))
-			{
-				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
-			}
-			else if (xGoal < x && Math.abs(xGoal - x) > Math.abs(yGoal - y))
-			{
-				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
-			}
-			else if (yGoal < y && Math.abs(xGoal - x) < Math.abs(yGoal - y))
-			{
-				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
-			}
-		}
-		
-		return result;
-	}
-	
-	private ArrayList<Point> findPathResult;
-	
-	private boolean findPathRinterim(int x, int y, int xGoal, int yGoal, ArrayList<Point> pathHistory)
-	{
-		if (!inTempMap(x,y) && !isObstacle(map[x][y]) && !isBlank(map[x][y]))
-		{
-			pathHistory.add(new Point(x, y));
-			return findPathR(x, y, xGoal, yGoal, pathHistory);
-		}
-		return false;
-	}
-	
-	// ==============================================================================
-	// =========================== STATE 2: Path Making =============================
-	// ==============================================================================
-		
-	private char getPathMakingMove(char view[][])
-	{
-		return 0;
-	}
-	
-	// ==============================================================================
-	// ========================= STATE 3: Goal Searching ============================
-	// ==============================================================================
-		
-	private char getGoalSearchingMove(char view[][])
-	{
-		return 0;
-	}
-
 	// ==============================================================================
 	// ============================== View Stuff ====================================
 	// ==============================================================================
+	
+	private int viewForwardX()
+	{
+		if (getDirection() == DIRECTION_UP) 	return locY - 1;
+		if (getDirection() == DIRECTION_DOWN) 	return locY + 1;
+		if (getDirection() == DIRECTION_LEFT) 	return locY;
+		if (getDirection() == DIRECTION_RIGHT) 	return locY;
+		return 0;
+	}
+	private int viewForwardY()
+	{
+		if (getDirection() == DIRECTION_UP) 	return locX;
+		if (getDirection() == DIRECTION_DOWN) 	return locX;
+		if (getDirection() == DIRECTION_LEFT) 	return locX - 1;
+		if (getDirection() == DIRECTION_RIGHT) 	return locX + 1;
+		return 0;
+	}
 	
 	private char viewForward()
 	{
@@ -609,33 +861,6 @@ public class Agent {
 		if (getDirection() == DIRECTION_DOWN) 	return map[locY + 1][locX];
 		if (getDirection() == DIRECTION_LEFT) 	return map[locY][locX - 1];
 		if (getDirection() == DIRECTION_RIGHT) 	return map[locY][locX + 1];
-		return 0;
-	}
-	
-	private char viewLeft()
-	{
-		if (getDirection() == DIRECTION_UP) 	return map[locY][locX - 1];
-		if (getDirection() == DIRECTION_DOWN) 	return map[locY][locX + 1];
-		if (getDirection() == DIRECTION_LEFT) 	return map[locY + 1][locX];
-		if (getDirection() == DIRECTION_RIGHT) 	return map[locY - 1][locX];
-		return 0;
-	}
-	
-	private char viewRight()
-	{
-		if (getDirection() == DIRECTION_UP) 	return map[locY][locX + 1];
-		if (getDirection() == DIRECTION_DOWN) 	return map[locY][locX - 1];
-		if (getDirection() == DIRECTION_LEFT) 	return map[locY - 1][locX];
-		if (getDirection() == DIRECTION_RIGHT) 	return map[locY + 1][locX];
-		return 0;
-	}
-	
-	private char viewBackward()
-	{
-		if (getDirection() == DIRECTION_UP) 	return map[locY + 1][locX];
-		if (getDirection() == DIRECTION_DOWN) 	return map[locY - 1][locX];
-		if (getDirection() == DIRECTION_LEFT) 	return map[locY][locX + 1];
-		if (getDirection() == DIRECTION_RIGHT) 	return map[locY][locX - 1];
 		return 0;
 	}
 	
@@ -748,7 +973,16 @@ public class Agent {
 	
 	private boolean isObstacle(char chr)
 	{
-		if (chr == OBSTACLE_TREE || chr == OBSTACLE_DOOR || chr == OBSTACLE_WALL || chr == OBSTACLE_WATER)
+		if (chr == OBSTACLE_TREE || chr == OBSTACLE_DOOR || chr == OBSTACLE_WALL)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private boolean isWater(char chr)
+	{
+		if (chr == OBSTACLE_WATER)
 		{
 			return true;
 		}
@@ -836,6 +1070,16 @@ public class Agent {
 		}
 	}
 	
+	private char toolToObstacle(char chr)
+	{
+		switch(chr)
+		{
+			case TOOL_AXE: return OBSTACLE_TREE;
+			case TOOL_KEY: return OBSTACLE_DOOR;
+		}		
+		return 0;
+	}
+	
 	// ==============================================================================
 	// ================================= Other ======================================
 	// ==============================================================================
@@ -845,17 +1089,46 @@ public class Agent {
 		this.state = state;
 	}
 	
+	private boolean isPoint(int coord)
+	{
+		if (coord != NO_POINT)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	private char relativeChar(char view[][], int forward, int left)
+	{
+		if (Math.abs(forward) <= 2 || Math.abs(left) <= 2)
+		{
+			if (isBlank(view[MAP_VIEW_HALF_SIZE - forward][MAP_VIEW_HALF_SIZE - left]))
+			{
+				return '.';
+			}
+			return view[MAP_VIEW_HALF_SIZE - forward][MAP_VIEW_HALF_SIZE - left];
+		}
+		return OBSTACLE_WATER;
+	}
+	
+	private char turnTowards()
+	{		
+		int turnDirection = greatestAdjacentWeight();
+		if (turnDirection == DIRECTION_RELATIVE_LEFT)		return ACTION_TURNLEFT;
+		if (turnDirection == DIRECTION_RELATIVE_RIGHT)		return ACTION_TURNRIGHT;
+		if (turnDirection == DIRECTION_RELATIVE_BACKWARD)	return ACTION_TURNLEFT;
+		return 0;
+	}
+	
 	// ==============================================================================
 	// ================================= Fields =====================================
 	// ==============================================================================
 	
 	private char[][] map;
 	private boolean[][] mapTemp;
+	private boolean[][] mapTemp2;
 	private int[][] mapWeight;
-	
-	private int greatestMapWeightX;
-	private int greatestMapWeightY;
-	
+		
 	private int iterations;
 	private int direction;
 	private int state;
@@ -874,7 +1147,7 @@ public class Agent {
 	private int numToolsDynamite;
 	private int numToolsGold;
 	
-	private int checkingForTools;
+	private boolean firstMove;
 	
 	// ==============================================================================
 	// ============================= Definitions ====================================
@@ -902,14 +1175,11 @@ public class Agent {
 	
 	// Map Properties
 	private static final int MAP_SEARCH_SIZE 	= 170;
-	private static final int MAP_VIEW_SIZE 		= 5;
-	private static final int MAP_VIEW_CENTRE 	= 2;
-	private static final int MAP_VIEW_SPACE_INFRONT_X = 1;
-	private static final int MAP_VIEW_SPACE_INFRONT_Y = 2;
+	private static final int MAP_VIEW_HALF_SIZE	= 2;
 	// States
 	private static final int STATE_UNFOGGING 	= 0;
-	private static final int STATE_MAKINGPATH 	= 1;
-	private static final int STATE_SEARCHINGGOAL= 2;
+	private static final int STATE_TOOLUSING 	= 1;
+	private static final int STATE_FINISH 		= 2;
 
 	// Obstacles
 	private static final char OBSTACLE_UNSEEN	= 0;
@@ -924,7 +1194,20 @@ public class Agent {
 	private static final char ACTION_TURNRIGHT	= 'R';
 	private static final char ACTION_TURNLEFT	= 'L';
 	private static final char ACTION_MOVEFORWARD= 'F';
+	private static final char ACTION_CHOP		= 'C';
+	private static final char ACTION_OPEN		= 'O';
+	private static final char ACTION_BLAST 		= 'B';
    
+	// Weight
+	private static final int INITIAL_WEIGHT		= 500;
+	
+	private static final int NO_POINT			= -1;
+	
+	
+	
+	
+	
+	
 	// ==============================================================================
 	// ============================= Map Printing ===================================
 	// ==============================================================================
@@ -961,9 +1244,40 @@ public class Agent {
 		System.out.print("   \n");		
 	}
 	
+	private void printTempMap2()
+	{
+		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+		{
+			System.out.print(j + " ");
+		}
+		System.out.print("   \n");
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
+		{
+			System.out.print(i + " ");
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+			{
+				if (mapTemp2[i][j])
+				{
+					System.out.print(".  ");
+				}
+				else
+				{
+					System.out.print("   ");
+				}
+			}
+			System.out.print(" " + i);
+			System.out.println();
+		}
+		System.out.print("   ");
+		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+		{
+			System.out.print(j + " ");
+		}
+		System.out.print("   \n");		
+	}
+	
 	private void printWeightMap()
 	{
-		System.out.println("Greatest Weight ("+greatestMapWeightX+","+greatestMapWeightY+"): " + mapWeight[greatestMapWeightX][greatestMapWeightY]);
 		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
 		System.out.print("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
@@ -1089,7 +1403,6 @@ public class Agent {
       int port;
       int ch;
       int i,j;
-
       if( args.length < 2 ) {
          System.out.println("Usage: java Agent -p <port>\n");
          System.exit(-1);
@@ -1120,8 +1433,10 @@ public class Agent {
                   }
                }
             }
+            System.out.println("==================================================================================");
             agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
             
+            //agent.printMap();
             action = agent.get_action( view );
             out.write( action );
             //agent.printTempMap();
