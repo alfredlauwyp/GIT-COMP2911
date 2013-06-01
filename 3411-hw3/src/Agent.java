@@ -6,15 +6,7 @@ import java.util.Random;
 
 public class Agent {
 
-	private boolean RANDOMSTOP;
-	
 	public Agent()
-	{
-		setFields();
-	}
-	
-	// Set all basic fields to their default values
-	private void setFields()
 	{
 		this.iterations = -1;
 		this.direction = 0;
@@ -26,8 +18,8 @@ public class Agent {
 		this.mapTemp2 = new boolean[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		this.mapWeight = new int[MAP_SEARCH_SIZE][MAP_SEARCH_SIZE];
 		
-		this.locX = this.startX = (MAP_SEARCH_SIZE / 2);
-		this.locY = this.startY = (MAP_SEARCH_SIZE / 2);
+		this.locY = this.startX = (MAP_SEARCH_SIZE / 2);
+		this.locX = this.startY = (MAP_SEARCH_SIZE / 2);
 		
 		this.obstacleToDynamite = new Coord(NO_POINT, NO_POINT);
 		this.obstacleToDynamiteLongTerm = this.obstacleToDynamite;
@@ -36,21 +28,27 @@ public class Agent {
 		
 		this.lastGetToCoord = new Coord(NO_POINT, NO_POINT);
 		
+		this.RANDOMSTOP = false;
 		weightedMapReset();
 	}
 		
 	private void wait(int time) { try { Thread.sleep(time);} catch(InterruptedException e) { speakln("Interrupted"); } }
 	
+	private boolean RANDOMSTOP;
 	public char get_action(char view[][])
 	{
 		this.iterations++;
 		char move = 0;
 		addMapFeatures(view);
+
+		speakln("All explored? " + this.allSpacesExplored());
 		
 		if (toolHave(TOOL_GOLD))
 		{
 			speakln("State: GO HOME");
+			RANDOMSTOP = true;
 			move = getTo(startX, startY);
+			
 		}
 		else if (canGetTo(findNearest(TOOL_GOLD).getX(), findNearest(TOOL_GOLD).getY()))
 		{
@@ -86,6 +84,7 @@ public class Agent {
 			speakln("State: TOOL USING");
 			move = getToolUsingMove(view);
 		}
+		else speakln("State: None");
 		
 		speakln("Move gonna do: " + move);
 		move = checkForTools(relativeChar(view, 1, 0), move); //Check if the item in front of you is a tool
@@ -107,7 +106,7 @@ public class Agent {
 			{
 				if (map[i][j] == chr)
 				{
-					System.out.println("Trying point ("+i+","+j+")");
+					//System.out.println("Trying point ("+i+","+j+")");
 					int diffX = Math.abs(p.getX() - i);
 					int diffY = Math.abs(p.getY() - i);
 					if (diffX + diffY < distanceAway && canGetTo(i, j))
@@ -118,14 +117,13 @@ public class Agent {
 			}
 		}
 		
-		speakln("NEAREST: " + p);
+		//speakln("NEAREST: " + p);
 		return p;
 	}
 	private Coord lastGetToCoord;
 	
 	private char getTo(int x, int y)
 	{
-		speakln("--GET TO-- at ("+findNearest(TOOL_GOLD).getX()+","+findNearest(TOOL_GOLD).getY()+")");
 		char move = 0;
 		if (lastGetToCoord.getX() != x || lastGetToCoord.getY() != y)
 		{
@@ -138,50 +136,56 @@ public class Agent {
 		{
 			speakln("Found Path");
 			printPathHistory(findPathResult);
-			int xCoord = findPathResult.get(0).getX();
-			int yCoord = findPathResult.get(0).getY();
-			speakln("=== Findign correct move ("+locY+","+locX+") ("+xCoord+","+yCoord+")");
-			if (locY - 1 == xCoord && locX == yCoord) // Up
-			{ 
-				if (getDirection() == DIRECTION_UP)
-				{
-					findPathResult.remove(0);
-					move = ACTION_MOVEFORWARD;
-				}
-				else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNLEFT;
-				else move = ACTION_TURNRIGHT;
-			}
-			else if (locY + 1 == xCoord  && locX == yCoord)
+			if (findPathResult.size() > 0)
 			{
-				if (getDirection() == DIRECTION_DOWN) // Down
+				int xCoord = findPathResult.get(0).getX();
+				int yCoord = findPathResult.get(0).getY();
+				speakln("=== Findign correct move ("+locX+","+locY+") ("+xCoord+","+yCoord+")");
+				if (locX - 1 == xCoord && locY == yCoord) // Up
+				{ 
+					if (getDirection() == DIRECTION_UP)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNLEFT;
+					else move = ACTION_TURNRIGHT;
+				}
+				else if (locX + 1 == xCoord  && locY == yCoord)
+				{
+					if (getDirection() == DIRECTION_DOWN) // Down
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNRIGHT;
+					else move = ACTION_TURNLEFT;
+				}
+				else if (locX == xCoord && locY - 1== yCoord) // Left
+				{
+					if (getDirection() == DIRECTION_LEFT)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_UP) move = ACTION_TURNLEFT;
+					else move = ACTION_TURNRIGHT;
+				}
+				else if (locX == xCoord && locY + 1 == yCoord) // Right
+				{
+					if (getDirection() == DIRECTION_RIGHT)
+					{
+						findPathResult.remove(0);
+						move = ACTION_MOVEFORWARD;
+					}
+					else if (getDirection() == DIRECTION_DOWN) move = ACTION_TURNLEFT;
+					else move = ACTION_TURNRIGHT;
+				}
+				else if (locX == xCoord && locY == yCoord)
 				{
 					findPathResult.remove(0);
-					move = ACTION_MOVEFORWARD;
 				}
-				else if (getDirection() == DIRECTION_RIGHT) move = ACTION_TURNRIGHT;
-				else move = ACTION_TURNLEFT;
-			}
-			else if (locY == xCoord && locX - 1== yCoord) // Left
-			{
-				if (getDirection() == DIRECTION_LEFT)
-				{
-					findPathResult.remove(0);
-					move = ACTION_MOVEFORWARD;
-				}
-				else if (getDirection() == DIRECTION_UP) move = ACTION_TURNLEFT;
-				else move = ACTION_TURNRIGHT;
-			}
-			else if (locY == xCoord && locX + 1 == yCoord) // Right
-			{
-				if (getDirection() == DIRECTION_RIGHT)
-				{
-					findPathResult.remove(0);
-					move = ACTION_MOVEFORWARD;
-				}
-				else if (getDirection() == DIRECTION_DOWN) move = ACTION_TURNLEFT;
-				else move = ACTION_TURNRIGHT;
-			}
-	
+			}		
 		}
 		lastGetToCoord.setX(x);
 		lastGetToCoord.setY(y);
@@ -207,11 +211,11 @@ public class Agent {
 	{
 		if (isPoint(x) && isPoint(y))
 		{
-			speakln("========================================= POINT FOUND ("+x+","+y+")");
+			System.out.println("========================================= from ("+locX+","+locY+") looking for POINT FOUND ("+x+","+y+")");
 			resetTempMap();
-			return canGetToR(locY, locX, x, y);
+			return canGetToR(locX, locY, x, y);
 		}
-		speakln("========================================= NOT A POINT FOUND");
+		System.out.println("========================================= from ("+locX+","+locY+") looking for NOT A POINT FOUND");
 		return false; // If no points are passed,
 		
 	}
@@ -222,22 +226,26 @@ public class Agent {
 		char item = map[finalX][finalY];
 		boolean result = false;
 		
-		if (map[x][y] == item) return true;		
+		if (x == finalX && y == finalY) return true;		
 		
 		if (!inTempMap(x+1,y) && result == false && !isWater(map[x+1][y]) && (!isObstacle(map[x + 1][y]) || (x+1==finalX && y==finalY)) && !isBlank(map[x + 1][y]))
 		{
+			//System.out.print("DOWN ");
 			result = canGetToR(x+1,y, finalX, finalY); // down
 		}
 		if (!inTempMap(x-1,y) && result == false && !isWater(map[x-1][y]) &&(!isObstacle(map[x - 1][y]) || (x-1==finalX && y==finalY)) && !isBlank(map[x - 1][y]))
 		{
+			//System.out.print("UP ");
 			result = canGetToR(x-1,y, finalX, finalY); // up
 		}		
 		if (!inTempMap(x,y+1) && result == false && !isWater(map[x][y+1]) &&(!isObstacle(map[x][y+1]) || (x==finalX && y+1==finalY)) && !isBlank(map[x][y + 1]))
 		{
+			//System.out.print("RIGHT ");
 			result = canGetToR(x,y+1, finalX, finalY); // right
 		}
 		if (!inTempMap(x,y-1) && result == false && !isWater(map[x][y-1]) &&(!isObstacle(map[x][y - 1]) || (x==finalX && y-1==finalY)) && !isBlank(map[x][y - 1]))
 		{
+			//System.out.print("LEFT ");
 			result = canGetToR(x,y - 1, finalX, finalY); // left 
 		}		
 		return result;
@@ -279,7 +287,7 @@ public class Agent {
 			}			
 			
 			obstacleToDynamite = new Coord(NO_POINT, NO_POINT);
-			solution = canGetToBehindObstacleR(locY, locX, 1, items[count]);
+			solution = canGetToBehindObstacleR(locX, locY, 1, items[count]);
 			speakln("Solution: " + solution + " for "+items[count]+" towards " + obstacleToDynamite);
 			count++;
 		}
@@ -366,7 +374,7 @@ public class Agent {
 		ArrayList<Coord> pathHistory = new ArrayList<Coord>();
 		resetTempMap();
 		speakln("=== FIND PATH to ("+x+","+y+")===");
-		findPathR(locY, locX, x, y, pathHistory);		
+		findPathR(locX, locY, x, y, pathHistory);
 	}
 	
 	private boolean findPathR(int x, int y, int xGoal, int yGoal, ArrayList<Coord> pathHistory)
@@ -407,6 +415,12 @@ public class Agent {
 					}
 				}
 			}
+			if (RANDOMSTOP)
+			{
+				speak("\nPATH: ");printPathHistory(findPathResult);
+				//wait(2000);
+			}
+			
 			
 		}
 		if (!result)
@@ -439,10 +453,10 @@ public class Agent {
 			else if (yGoal < y && Math.abs(xGoal - x) <= Math.abs(yGoal - y))
 			{
 				speakln("Right");
-				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
+				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
 			}
 		}
 		
@@ -470,6 +484,67 @@ public class Agent {
 	
 	
 	
+	private Coord findNearestUnseen()
+	{
+		int itemY = NO_POINT;
+		int itemX = NO_POINT;
+		int distanceAway = 1000;
+		Coord p = new Coord(itemY, itemX);
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
+		{
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
+			{
+				if (
+						isBlank(map[i+2][j-2]) ||
+						isBlank(map[i+2][j-1]) ||
+						isBlank(map[i+2][j]) ||
+						isBlank(map[i+2][j+1]) ||
+						isBlank(map[i+2][j+2]) ||
+						
+						isBlank(map[i+1][j-2]) ||
+						isBlank(map[i+1][j-1]) ||
+						isBlank(map[i+1][j]) ||
+						isBlank(map[i+1][j+1]) ||
+						isBlank(map[i+1][j+2]) ||
+
+						isBlank(map[i][j-2]) ||
+						isBlank(map[i][j-1]) ||
+						isBlank(map[i][j+1]) ||
+						isBlank(map[i][j+2]) ||
+						
+						isBlank(map[i-1][j-2]) ||
+						isBlank(map[i-1][j-1]) ||
+						isBlank(map[i-1][j]) ||
+						isBlank(map[i-1][j+1]) ||
+						isBlank(map[i-1][j+2]) ||
+						
+						isBlank(map[i-2][j-2]) ||
+						isBlank(map[i-2][j-1]) ||
+						isBlank(map[i-2][j]) ||
+						isBlank(map[i-2][j+1]) ||
+						isBlank(map[i-2][j+2])
+				)
+				{
+					//System.out.println("---1: Trying point ("+i+","+j+")");
+					if (map[i][j] == OBSTACLE_EXPLORED)
+					{
+						//System.out.println("------2: Trying point ("+i+","+j+")");
+						int diffX = Math.abs(locX - i);
+						int diffY = Math.abs(locY - j);
+						if (diffX + diffY < distanceAway && canGetTo(i, j))
+						{
+							//System.out.println("-----------3: Trying point ("+i+","+j+") - " + (diffX + diffY < distanceAway) + " | " + canGetTo(i, j));
+							distanceAway = diffX + diffY;
+							p = new Coord(i, j);
+						}
+					}
+				}
+			}
+		}
+		
+		speakln("NEAREST: " + p);
+		return p;
+	}
 	
 	
 	
@@ -503,16 +578,10 @@ public class Agent {
 		}
 		else
 		{
-			if (firstMove) {
-				weightedMap();
-				firstMove = false;
-			}
-			move = turnTowards();
-			if (move == 0)
-			{
-				weightedMap();
-				move = ACTION_MOVEFORWARD;
-			}		
+			Coord x = findNearestUnseen();
+			System.out.println("Nearest Unseen: " + x);
+			move = getTo(x.getX(), x.getY());
+			System.out.println("Move to unfog: " + move);
 		}
 		return move;
 	}
@@ -709,35 +778,35 @@ public class Agent {
 	
 	private void weightedMap()
 	{
-		mapWeight[locY][locX] -= 9;
+		mapWeight[locX][locY] -= 9;
 		
-		mapWeight[locY - 1][locX] -= 2;
-		mapWeight[locY + 1][locX] -= 2;
-		mapWeight[locY][locX - 1] -= 2;
-		mapWeight[locY][locX + 1] -= 2;
-		mapWeight[locY - 1][locX + 1] -= 2;
-		mapWeight[locY - 1][locX - 1] -= 2;
-		mapWeight[locY + 1][locX + 1] -= 2;
-		mapWeight[locY + 1][locX - 1] -= 2;
+		mapWeight[locX - 1][locY] -= 2;
+		mapWeight[locX + 1][locY] -= 2;
+		mapWeight[locX][locY - 1] -= 2;
+		mapWeight[locX][locY + 1] -= 2;
+		mapWeight[locX - 1][locY + 1] -= 2;
+		mapWeight[locX - 1][locY - 1] -= 2;
+		mapWeight[locX + 1][locY + 1] -= 2;
+		mapWeight[locX + 1][locY - 1] -= 2;
 		
-		mapWeight[locY + 2][locX] -= 1;
-		mapWeight[locY + 2][locX + 1] -= 1;
-		mapWeight[locY + 2][locX + 2] -= 1;
-		mapWeight[locY + 2][locX - 1] -= 1;
-		mapWeight[locY + 2][locX - 2] -= 1;
+		mapWeight[locX + 2][locY] -= 1;
+		mapWeight[locX + 2][locY + 1] -= 1;
+		mapWeight[locX + 2][locY + 2] -= 1;
+		mapWeight[locX + 2][locY - 1] -= 1;
+		mapWeight[locX + 2][locY - 2] -= 1;
 		
-		mapWeight[locY - 2][locX] -= 1;
-		mapWeight[locY - 2][locX + 1] -= 1;
-		mapWeight[locY - 2][locX + 2] -= 1;
-		mapWeight[locY - 2][locX - 1] -= 1;
-		mapWeight[locY - 2][locX - 2] -= 1;
+		mapWeight[locX - 2][locY] -= 1;
+		mapWeight[locX - 2][locY + 1] -= 1;
+		mapWeight[locX - 2][locY + 2] -= 1;
+		mapWeight[locX - 2][locY - 1] -= 1;
+		mapWeight[locX - 2][locY - 2] -= 1;
 		
-		mapWeight[locY - 1][locX + 2] -= 1;
-		mapWeight[locY - 1][locX - 2] -= 1;
-		mapWeight[locY + 1][locX + 2] -= 1;
-		mapWeight[locY + 1][locX - 2] -= 1;
-		mapWeight[locY][locX + 2] -= 1;
-		mapWeight[locY][locX - 2] -= 1;
+		mapWeight[locX - 1][locY + 2] -= 1;
+		mapWeight[locX - 1][locY - 2] -= 1;
+		mapWeight[locX + 1][locY + 2] -= 1;
+		mapWeight[locX + 1][locY - 2] -= 1;
+		mapWeight[locX][locY + 2] -= 1;
+		mapWeight[locX][locY - 2] -= 1;
 		
 		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
@@ -772,19 +841,19 @@ public class Agent {
 				
 				if (getDirection() == DIRECTION_UP)
 				{
-					map[locY + i][locX + j] = relativeChar(view, -i, -j);
+					map[locX + i][locY + j] = relativeChar(view, -i, -j);
 				}
 				if (getDirection() == DIRECTION_DOWN)
 				{
-					map[locY + i][locX - j] = relativeChar(view, i, -j);
+					map[locX + i][locY - j] = relativeChar(view, i, -j);
 				}
 				if (getDirection() == DIRECTION_RIGHT)
 				{
-					map[locY - j][locX + i] = relativeChar(view, i, j);
+					map[locX - j][locY + i] = relativeChar(view, i, j);
 				}
 				if (getDirection() == DIRECTION_LEFT)
 				{
-					map[locY + j][locX + i] = relativeChar(view, -i, j);
+					map[locX + j][locY + i] = relativeChar(view, -i, j);
 				}
 			}
 		}
@@ -815,10 +884,10 @@ public class Agent {
 		if (isTool(chr))
 		{
 			toolAdd(chr);
-			if (getDirection() == DIRECTION_UP) 	map[locY - 1][locX] = OBSTACLE_EXPLORED;
-			if (getDirection() == DIRECTION_DOWN)	map[locY + 1][locX] = OBSTACLE_EXPLORED;
-			if (getDirection() == DIRECTION_LEFT) 	map[locY][locX - 1] = OBSTACLE_EXPLORED;
-			if (getDirection() == DIRECTION_RIGHT)	map[locY][locX + 1] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_UP) 	map[locX - 1][locY] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_DOWN)	map[locX + 1][locY] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_LEFT) 	map[locX][locY - 1] = OBSTACLE_EXPLORED;
+			if (getDirection() == DIRECTION_RIGHT)	map[locX][locY + 1] = OBSTACLE_EXPLORED;
 			move = ACTION_MOVEFORWARD;
 		}
 		return move;
@@ -830,63 +899,63 @@ public class Agent {
 	
 	private int viewForwardX()
 	{
-		if (getDirection() == DIRECTION_UP) 	return locY - 1;
-		if (getDirection() == DIRECTION_DOWN) 	return locY + 1;
-		if (getDirection() == DIRECTION_LEFT) 	return locY;
-		if (getDirection() == DIRECTION_RIGHT) 	return locY;
+		if (getDirection() == DIRECTION_UP) 	return locX - 1;
+		if (getDirection() == DIRECTION_DOWN) 	return locX + 1;
+		if (getDirection() == DIRECTION_LEFT) 	return locX;
+		if (getDirection() == DIRECTION_RIGHT) 	return locX;
 		return 0;
 	}
 	private int viewForwardY()
 	{
-		if (getDirection() == DIRECTION_UP) 	return locX;
-		if (getDirection() == DIRECTION_DOWN) 	return locX;
-		if (getDirection() == DIRECTION_LEFT) 	return locX - 1;
-		if (getDirection() == DIRECTION_RIGHT) 	return locX + 1;
+		if (getDirection() == DIRECTION_UP) 	return locY;
+		if (getDirection() == DIRECTION_DOWN) 	return locY;
+		if (getDirection() == DIRECTION_LEFT) 	return locY - 1;
+		if (getDirection() == DIRECTION_RIGHT) 	return locY + 1;
 		return 0;
 	}
 	
 	private char viewForward()
 	{
-		if (getDirection() == DIRECTION_UP) 	return map[locY - 1][locX];
-		if (getDirection() == DIRECTION_DOWN) 	return map[locY + 1][locX];
-		if (getDirection() == DIRECTION_LEFT) 	return map[locY][locX - 1];
-		if (getDirection() == DIRECTION_RIGHT) 	return map[locY][locX + 1];
+		if (getDirection() == DIRECTION_UP) 	return map[locX - 1][locY];
+		if (getDirection() == DIRECTION_DOWN) 	return map[locX + 1][locY];
+		if (getDirection() == DIRECTION_LEFT) 	return map[locX][locY - 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return map[locX][locY + 1];
 		return 0;
 	}
 	
 	private int viewForwardWeight()
 	{
-		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY - 1][locX];
-		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY + 1][locX];
-		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY][locX - 1];
-		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY][locX + 1];
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locX - 1][locY];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locX + 1][locY];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locX][locY - 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locX][locY + 1];
 		return 0;
 	}
 	
 	private int viewLeftWeight()
 	{
-		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY][locX - 1];
-		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY][locX + 1];
-		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY + 1][locX];
-		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY - 1][locX];
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locX][locY - 1];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locX][locY + 1];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locX + 1][locY];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locX - 1][locY];
 		return 0;
 	}
 	
 	private int viewRightWeight()
 	{
-		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY][locX + 1];
-		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY][locX - 1];
-		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY - 1][locX];
-		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY + 1][locX];
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locX][locY + 1];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locX][locY - 1];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locX - 1][locY];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locX + 1][locY];
 		return 0;
 	}
 	
 	private int viewBackwardWeight()
 	{
-		if (getDirection() == DIRECTION_UP) 	return mapWeight[locY + 1][locX];
-		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locY - 1][locX];
-		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locY][locX + 1];
-		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locY][locX - 1];
+		if (getDirection() == DIRECTION_UP) 	return mapWeight[locX + 1][locY];
+		if (getDirection() == DIRECTION_DOWN) 	return mapWeight[locX - 1][locY];
+		if (getDirection() == DIRECTION_LEFT) 	return mapWeight[locX][locY + 1];
+		if (getDirection() == DIRECTION_RIGHT) 	return mapWeight[locX][locY - 1];
 		return 0;
 	}
 	
@@ -911,10 +980,10 @@ public class Agent {
 	}
 	private char actionForward()
 	{
-		if (getDirection() == DIRECTION_UP) 	locY--;
-		if (getDirection() == DIRECTION_DOWN) 	locY++;
-		if (getDirection() == DIRECTION_RIGHT) 	locX++;
-		if (getDirection() == DIRECTION_LEFT) 	locX--;
+		if (getDirection() == DIRECTION_UP) 	locX--;
+		if (getDirection() == DIRECTION_DOWN) 	locX++;
+		if (getDirection() == DIRECTION_RIGHT) 	locY++;
+		if (getDirection() == DIRECTION_LEFT) 	locY--;
 		return ACTION_MOVEFORWARD;
 	}
 	
@@ -1122,8 +1191,8 @@ public class Agent {
 	private int iterations;
 	private int direction;
 	private int state;
-	private int locX;
 	private int locY;
+	private int locX;
 	private int startX;
 	private int startY;
 	
@@ -1267,7 +1336,7 @@ public class Agent {
 	
 	private void printWeightMap()
 	{
-		speakln("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
+		speakln("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locY + "," + locX + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
 		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
@@ -1279,7 +1348,7 @@ public class Agent {
 			speak(i + " ");
 			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
-				if (locY == i && locX == j)
+				if (locX == i && locY == j)
 				{
 					speak(".  ");
 				}
@@ -1310,19 +1379,19 @@ public class Agent {
 	
 	private void printMap()
 	{
-		speakln("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
-		speak("   ");
+		System.out.print("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locY + "," + locX + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")\n");		
+		System.out.print("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			speak(j + " ");
+			System.out.print(j + " ");
 		}
-		speak("   \n");
+		System.out.print("   \n");
 		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
-			speak(i + " ");
+			System.out.print(i + " ");
 			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
-				if (i == locY && j == locX)
+				if (i == locX && j == locY)
 				{
 					if (getDirection() == DIRECTION_UP) speak("^  ");
 					if (getDirection() == DIRECTION_LEFT) speak("<  ");
@@ -1332,18 +1401,18 @@ public class Agent {
 				else
 				{
 					if (map[i][j] == 0) { map[i][j] = ' '; }
-					speak(map[i][j] + "  ");
+					System.out.print(map[i][j] + "  ");
 				}
 			}
-			speak(" " + i);
-			speakln("");
+			System.out.print(" " + i);
+			System.out.print("\n");
 		}
-		speak("   ");
+		System.out.print("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			speak(j + " ");
+			System.out.print(j + " ");
 		}
-		speak("   \n");
+		System.out.print("   \n");
 	}
 	
 	
@@ -1456,6 +1525,6 @@ public class Agent {
    }
    private static void speakln(String s)
    {
-	   speak(s + "\n");
+	  speak(s + "\n");
    }
 }
