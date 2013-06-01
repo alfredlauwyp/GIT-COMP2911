@@ -34,71 +34,60 @@ public class Agent {
 		
 		this.firstMove = true;
 		
-		// Remove me
-		this.RANDOMSTOP = false;
 		this.lastGetToCoord = new Coord(NO_POINT, NO_POINT);
 		
 		weightedMapReset();
 	}
 		
-	private void wait(int time) { try { Thread.sleep(time);} catch(InterruptedException e) { System.out.println("Interrupted"); } }
+	private void wait(int time) { try { Thread.sleep(time);} catch(InterruptedException e) { speakln("Interrupted"); } }
 	
 	public char get_action(char view[][])
 	{
 		this.iterations++;
-		wait(0);
 		char move = 0;
 		addMapFeatures(view);
 		
 		if (toolHave(TOOL_GOLD))
 		{
-			System.out.println("HAS GOLD");
+			speakln("State: GO HOME");
 			move = getTo(startX, startY);
 		}
 		else if (canGetTo(findNearest(TOOL_GOLD).getX(), findNearest(TOOL_GOLD).getY()))
 		{
-			System.out.println("CAN GET TO GOLD which is at ("+findNearest(TOOL_GOLD).getX()+","+findNearest(TOOL_GOLD).getY()+")");
+			speakln("State: CHASE GOLD");
 			move = getTo(findNearest(TOOL_GOLD).getX(), findNearest(TOOL_GOLD).getY());
 		}		
 		else if (toolHave(TOOL_AXE) && viewForward() == OBSTACLE_TREE)
 		{
-			System.out.println("CAN CUT WITH AXE");
+			speakln("State: CUT TREE");
 			resetWeight(viewForwardX(), viewForwardY());
 			move = ACTION_CHOP;
 		}
 		else if (toolHave(TOOL_KEY) && viewForward() == OBSTACLE_DOOR)
 		{
-			System.out.println("CAN OPEN WITH KEY");
+			speakln("State: OPEN DOOR");
 			resetWeight(viewForwardX(), viewForwardY());
 			move = ACTION_OPEN;
 		}
 		else if (toolHave(TOOL_DYNAMITE) && (viewForwardX() == obstacleToDynamite.getX() && viewForwardY() == obstacleToDynamite.getY()))
 		{
-			System.out.println("CAN OPEN WITH DYNAMITE ("+viewForwardX()+","+viewForwardY()+") is ("+obstacleToDynamite.getX()+","+obstacleToDynamite.getY()+")");
+			speakln("State: BLOW THINGS UP");
 			resetWeight(viewForwardX(), viewForwardY());
 			move = ACTION_BLAST;
 			toolRemove(TOOL_DYNAMITE);
 		}
-		else
+		else if (this.state == STATE_UNFOGGING)
 		{
-			System.out.println("LOOKING AT STATES");
-			switch (this.state)
-			{		
-				case STATE_UNFOGGING:
-					System.out.println("State: UNFOGGING");
-					move = getUnfoggingMove(view);
-				break;
-				case STATE_TOOLUSING:
-					System.out.println("State: PATH MAKING");
-					move = getToolUsingMove(view);
-				break;
-				case STATE_FINISH:
-					System.out.println("State: FINISH");
-					while(true);
-			}
+			speakln("State: UNFOGGING");
+			move = getUnfoggingMove(view);
+		}
+		else if (this.state == STATE_TOOLUSING)
+		{
+			speakln("State: TOOL USING");
+			move = getToolUsingMove(view);
 		}
 		
-		System.out.println("Move gonna do: " + move);
+		speakln("Move gonna do: " + move);
 		move = checkForTools(relativeChar(view, 1, 0), move); //Check if the item in front of you is a tool
 		doAction(move); // Carry out the decided action
 		return move;		
@@ -110,40 +99,48 @@ public class Agent {
 	{
 		int itemY = NO_POINT;
 		int itemX = NO_POINT;
-		for (int i = mapBoundLeft; i < mapBoundRight; i++)
+		int distanceAway = 1000;
+		Coord p = new Coord(itemY, itemX);
+		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
-			for (int j = mapBoundTop; j < mapBoundBottom; j++)
+			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
 				if (map[i][j] == chr)
 				{
-					itemY = i;
-					itemX = j;
+					System.out.println("Trying point ("+i+","+j+")");
+					int diffX = Math.abs(p.getX() - i);
+					int diffY = Math.abs(p.getY() - i);
+					if (diffX + diffY < distanceAway && canGetTo(i, j))
+					{
+						p = new Coord(i, j);
+					}
 				}
 			}
 		}
-		Coord p = new Coord(itemY, itemX);
+		
+		speakln("NEAREST: " + p);
 		return p;
 	}
 	private Coord lastGetToCoord;
 	
 	private char getTo(int x, int y)
 	{
-		System.out.println("--GET TO-- at ("+findNearest(TOOL_GOLD).getX()+","+findNearest(TOOL_GOLD).getY()+")");
+		speakln("--GET TO-- at ("+findNearest(TOOL_GOLD).getX()+","+findNearest(TOOL_GOLD).getY()+")");
 		char move = 0;
 		if (lastGetToCoord.getX() != x || lastGetToCoord.getY() != y)
 		{
-			System.out.println("Finding Path");
+			speakln("Finding Path");
 			findPath(x, y);			
 			printPathHistory(findPathResult);
 			
 		}
 		else
 		{
-			System.out.println("Found Path");
+			speakln("Found Path");
 			printPathHistory(findPathResult);
 			int xCoord = findPathResult.get(0).getX();
 			int yCoord = findPathResult.get(0).getY();
-			System.out.println("=== Findign correct move ("+locY+","+locX+") ("+xCoord+","+yCoord+")");
+			speakln("=== Findign correct move ("+locY+","+locX+") ("+xCoord+","+yCoord+")");
 			if (locY - 1 == xCoord && locX == yCoord) // Up
 			{ 
 				if (getDirection() == DIRECTION_UP)
@@ -188,7 +185,7 @@ public class Agent {
 		}
 		lastGetToCoord.setX(x);
 		lastGetToCoord.setY(y);
-		System.out.println("Move: " + move);
+		speakln("Move: " + move);
 		return move;
 	}	
 	
@@ -210,11 +207,11 @@ public class Agent {
 	{
 		if (isPoint(x) && isPoint(y))
 		{
-			System.out.println("========================================= POINT FOUND ("+x+","+y+")");
+			speakln("========================================= POINT FOUND ("+x+","+y+")");
 			resetTempMap();
-			return canGetToR(startX, startY, x, y);
+			return canGetToR(locY, locX, x, y);
 		}
-		System.out.println("========================================= NOT A POINT FOUND");
+		speakln("========================================= NOT A POINT FOUND");
 		return false; // If no points are passed,
 		
 	}
@@ -255,7 +252,7 @@ public class Agent {
 	
 	private boolean canGetToBehindObstacle()
 	{
-		System.out.println("========================================= HOW CAN WE USE DYNAMITE?");
+		speakln("========================================= HOW CAN WE USE DYNAMITE?");
 		boolean solution = false;
 		
 		char items[] = {TOOL_GOLD, TOOL_DYNAMITE, TOOL_AXE, TOOL_KEY};
@@ -269,13 +266,13 @@ public class Agent {
 			int obsX = obstacleToDynamiteLongTerm.getX();
 			int obsY = obstacleToDynamiteLongTerm.getY();
 			
-			System.out.println("Checking if point! " +obstacleToDynamiteLongTerm);
+			speakln("Checking if point! " +obstacleToDynamiteLongTerm);
 			if (isPoint(obsX) && isPoint(obsY))
 			{
-				System.out.println("Is Point! " +obstacleToDynamiteLongTerm + " is " + map[obsX][obsY] + " equal to " + toolToObstacle(items[count]));
+				speakln("Is Point! " +obstacleToDynamiteLongTerm + " is " + map[obsX][obsY] + " equal to " + toolToObstacle(items[count]));
 				if (map[obsX][obsY] == toolToObstacle(items[count]))
 				{
-					System.out.println("Stay!! " +obstacleToDynamiteLongTerm);
+					speakln("Stay!! " +obstacleToDynamiteLongTerm);
 					obstacleToDynamite = obstacleToDynamiteLongTerm;
 					return true;
 				}
@@ -283,10 +280,10 @@ public class Agent {
 			
 			obstacleToDynamite = new Coord(NO_POINT, NO_POINT);
 			solution = canGetToBehindObstacleR(locY, locX, 1, items[count]);
-			System.out.println("Solution: " + solution + " for "+items[count]+" towards " + obstacleToDynamite);
+			speakln("Solution: " + solution + " for "+items[count]+" towards " + obstacleToDynamite);
 			count++;
 		}
-		System.out.println("Solution: " + items[count-1] + " towards " + obstacleToDynamite);
+		speakln("Solution: " + items[count-1] + " towards " + obstacleToDynamite);
 		obstacleToDynamiteLongTerm = obstacleToDynamite;
 		return solution;
 	}
@@ -320,7 +317,7 @@ public class Agent {
 	
 	private boolean canGetToBehindObstacleRInterim(int x, int y, int getOutOfJailFree, char itemOfInterest)
 	{
-		//System.out.print("("+x+","+y+") gOOJF: " + getOutOfJailFree + " .. isObstacle? " + map[x][y] + " .... CanGetThere: "+(!inTempMap(x,y) && !inTempMap2(x,y) && !isWater(map[x][y]) && (!isObstacle(map[x][y]) || getOutOfJailFree > 0) && !isBlank(map[x][y]))+"\n");
+		//speak("("+x+","+y+") gOOJF: " + getOutOfJailFree + " .. isObstacle? " + map[x][y] + " .... CanGetThere: "+(!inTempMap(x,y) && !inTempMap2(x,y) && !isWater(map[x][y]) && (!isObstacle(map[x][y]) || getOutOfJailFree > 0) && !isBlank(map[x][y]))+"\n");
 		if (!inTempMap(x,y) && !isWater(map[x][y]) && (!isObstacle(map[x][y]) || getOutOfJailFree > 0) && !isBlank(map[x][y]))
 		{			
 			if (getOutOfJailFree > 0)
@@ -360,7 +357,7 @@ public class Agent {
 	{
 		for (int i = 0; i < pathHistory.size(); i++)
 		{
-			System.out.print("(" + (int)pathHistory.get(i).getX() + "," + (int)pathHistory.get(i).getY() + "), ");
+			speak("(" + (int)pathHistory.get(i).getX() + "," + (int)pathHistory.get(i).getY() + "), ");
 		}
 	}
 	
@@ -368,20 +365,20 @@ public class Agent {
 	{
 		ArrayList<Coord> pathHistory = new ArrayList<Coord>();
 		resetTempMap();
-		System.out.println("=== FIND PATH to ("+x+","+y+")===");
+		speakln("=== FIND PATH to ("+x+","+y+")===");
 		findPathR(locY, locX, x, y, pathHistory);		
 	}
 	
 	private boolean findPathR(int x, int y, int xGoal, int yGoal, ArrayList<Coord> pathHistory)
 	{
 		ArrayList<Coord> pathHistoryClone = new ArrayList<Coord>(pathHistory);
-		System.out.print("FINDPATHR: At point ("+x+","+y+") ("+map[x][y]+"), looking for goal ("+xGoal+","+yGoal+")\n");
+		speak("FINDPATHR: At point ("+x+","+y+") ("+map[x][y]+"), looking for goal ("+xGoal+","+yGoal+")\n");
 		addTempMap(x,y);
 		boolean result = false;
 		if (x == xGoal && y == yGoal)
 		{
 			result = true;
-			System.out.println("=====Found Goal!\n=====\n======\n======\n======");
+			speakln("=====Found Goal!\n=====\n======\n======\n======");
 			findPathResult = pathHistoryClone;
 			
 			// Holy fuck please lord forgive me for the below
@@ -400,10 +397,10 @@ public class Agent {
 						int yCo2 = (int)findPathResult.get(i+1).getY();
 						if ((Math.abs(xCo2 - xCo1) > 0 && Math.abs(yCo2 - yCo1) > 0) || Math.abs(yCo2 - yCo1) > 1 || Math.abs(xCo2 - xCo1) > 1)
 						{
-							System.out.print("\nPREVIOUS: ");printPathHistory(findPathResult);
-							System.out.print("\nCUTTING: " + findPathResult.get(i));
+							speak("\nPREVIOUS: ");printPathHistory(findPathResult);
+							speak("\nCUTTING: " + findPathResult.get(i));
 							findPathResult.remove(i);
-							System.out.print("\nAFTER: ");printPathHistory(findPathResult);
+							speak("\nAFTER: ");printPathHistory(findPathResult);
 							finishedRemoving = false;
 							break;
 						}
@@ -414,42 +411,34 @@ public class Agent {
 		}
 		if (!result)
 		{
-			System.out.println("No result yet");
-			if (xGoal > x && Math.abs(xGoal - x) > Math.abs(yGoal - y))
+			speakln("No result yet");
+			if (xGoal > x && Math.abs(xGoal - x) >= Math.abs(yGoal - y))
 			{
-				System.out.println("Up");
+				speakln("Up");
 				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
 			}
-			else if (yGoal > y && Math.abs(xGoal - x) < Math.abs(yGoal - y))
+			else if (yGoal > y && Math.abs(xGoal - x) <= Math.abs(yGoal - y))
 			{
-				System.out.println("Down");
+				speakln("Down");
 				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
 			}
-			else if (xGoal < x && Math.abs(xGoal - x) > Math.abs(yGoal - y))
+			else if (xGoal < x && Math.abs(xGoal - x) >= Math.abs(yGoal - y))
 			{
-				System.out.println("Left");
+				speakln("Left");
 				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
 			}
-			else if (yGoal < y && Math.abs(xGoal - x) < Math.abs(yGoal - y))
+			else if (yGoal < y && Math.abs(xGoal - x) <= Math.abs(yGoal - y))
 			{
-				System.out.println("Right");
-				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
-				if (!result) result = findPathRinterim(x - 1, y, xGoal, yGoal, pathHistoryClone);
-			}
-			else
-			{
-				System.out.println("Else");
+				speakln("Right");
 				if (!result) result = findPathRinterim(x + 1, y, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y + 1, xGoal, yGoal, pathHistoryClone);
 				if (!result) result = findPathRinterim(x, y - 1, xGoal, yGoal, pathHistoryClone);
@@ -537,39 +526,40 @@ public class Agent {
 		char move = 0;
 		if (!toolHave(TOOL_AXE) && canGetTo(findNearest(TOOL_AXE).getX(), findNearest(TOOL_AXE).getY()))
 		{
-			System.out.println("=== 1");
+			speakln("=== 1");
 			move = getTo(findNearest(TOOL_AXE).getX(), findNearest(TOOL_AXE).getY());
 		}
 		else if (toolHave(TOOL_AXE) && canGetTo(findNearest(OBSTACLE_TREE).getX(), findNearest(OBSTACLE_TREE).getY()))
 		{
-			System.out.println("=== 2");
+			speakln("=== 2");
+			System.out.println("Closest Tree? " + findNearest(OBSTACLE_TREE).getX() + "," + findNearest(OBSTACLE_TREE).getY());
 			move = getTo(findNearest(OBSTACLE_TREE).getX(), findNearest(OBSTACLE_TREE).getY());
-			System.out.println("Move FOR AXE: " + move);
+			speakln("Move FOR AXE: " + move);
 		}
 		else if (!toolHave(TOOL_KEY) && canGetTo(findNearest(TOOL_KEY).getX(), findNearest(TOOL_KEY).getY()))
 		{
-			System.out.println("=== 3");
+			speakln("=== 3");
 			move = getTo(findNearest(TOOL_KEY).getX(), findNearest(TOOL_KEY).getY());
 		}
 		else if (toolHave(TOOL_KEY) && canGetTo(findNearest(OBSTACLE_DOOR).getX(), findNearest(OBSTACLE_DOOR).getY()))
 		{
-			System.out.println("=== 4");
+			speakln("=== 4");
 			move = getTo(findNearest(OBSTACLE_DOOR).getX(), findNearest(OBSTACLE_DOOR).getY());
 		}
 		else if (!toolHave(TOOL_DYNAMITE) && canGetTo(findNearest(TOOL_DYNAMITE).getX(), findNearest(TOOL_DYNAMITE).getY()))
 		{
-			System.out.println("=== 5");
+			speakln("=== 5");
 			move = getTo(findNearest(TOOL_DYNAMITE).getX(), findNearest(TOOL_DYNAMITE).getY());
 		}
 		else if (toolHave(TOOL_DYNAMITE) && canGetToBehindObstacle())
 		{
-			System.out.println("=== 6");
-			System.out.println("\n\n"+obstacleToDynamite+"\n\n");
+			speakln("=== 6");
+			speakln("\n\n"+obstacleToDynamite+"\n\n");
 			move = getTo(obstacleToDynamite.getX(), obstacleToDynamite.getY());
 		}
 		else
 		{
-			System.out.println("=== CHANGING STATE BACK");
+			speakln("=== CHANGING STATE BACK");
 			changeState(STATE_UNFOGGING);
 		}
 		return move;
@@ -713,7 +703,7 @@ public class Agent {
 	
 	private void resetWeight(int x, int y)
 	{
-		System.out.println("Trying to reset ("+x+","+y+")");
+		speakln("Trying to reset ("+x+","+y+")");
 		mapWeight[x][y] = INITIAL_WEIGHT;
 	}
 	
@@ -1179,7 +1169,6 @@ public class Agent {
 	// States
 	private static final int STATE_UNFOGGING 	= 0;
 	private static final int STATE_TOOLUSING 	= 1;
-	private static final int STATE_FINISH 		= 2;
 
 	// Obstacles
 	private static final char OBSTACLE_UNSEEN	= 0;
@@ -1216,145 +1205,145 @@ public class Agent {
 	{
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");
+		speak("   \n");
 		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
-			System.out.print(i + " ");
+			speak(i + " ");
 			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
 				if (mapTemp[i][j])
 				{
-					System.out.print(".  ");
+					speak(".  ");
 				}
 				else
 				{
-					System.out.print("   ");
+					speak("   ");
 				}
 			}
-			System.out.print(" " + i);
-			System.out.println();
+			speak(" " + i);
+			speakln("");
 		}
-		System.out.print("   ");
+		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");		
+		speak("   \n");		
 	}
 	
 	private void printTempMap2()
 	{
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");
+		speak("   \n");
 		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
-			System.out.print(i + " ");
+			speak(i + " ");
 			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
 				if (mapTemp2[i][j])
 				{
-					System.out.print(".  ");
+					speak(".  ");
 				}
 				else
 				{
-					System.out.print("   ");
+					speak("   ");
 				}
 			}
-			System.out.print(" " + i);
-			System.out.println();
+			speak(" " + i);
+			speakln("");
 		}
-		System.out.print("   ");
+		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");		
+		speak("   \n");		
 	}
 	
 	private void printWeightMap()
 	{
-		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
-		System.out.print("   ");
+		speakln("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
+		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");
+		speak("   \n");
 		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
-			System.out.print(i + " ");
+			speak(i + " ");
 			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
 				if (locY == i && locX == j)
 				{
-					System.out.print(".  ");
+					speak(".  ");
 				}
 				else if (mapWeight[i][j] > 99)
 				{
-					System.out.print(mapWeight[i][j] + "");
+					speak(mapWeight[i][j] + "");
 				}
 				else if (mapWeight[i][j] > 9 || mapWeight[i][j] < 0)
 				{
-					System.out.print(mapWeight[i][j] + " ");
+					speak(mapWeight[i][j] + " ");
 				}
 				else
 				{
-					System.out.print(mapWeight[i][j] + "  ");
+					speak(mapWeight[i][j] + "  ");
 				}
 				
 			}
-			System.out.print(" " + i);
-			System.out.println();
+			speak(" " + i);
+			speakln("");
 		}
-		System.out.print("   ");
+		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");
+		speak("   \n");
 	}
 	
 	private void printMap()
 	{
-		System.out.println("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
-		System.out.print("   ");
+		speakln("Steps("+iterations+") Direction(" + getDirection() + ") at location (" + locX + "," + locY + "), Axes("+toolCount(TOOL_AXE)+"), Keys("+toolCount(TOOL_KEY)+"), Dyns("+toolCount(TOOL_DYNAMITE)+"), Golds("+toolCount(TOOL_GOLD)+")");		
+		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");
+		speak("   \n");
 		for (int i = mapBoundLeft; i <= mapBoundRight; i++)
 		{
-			System.out.print(i + " ");
+			speak(i + " ");
 			for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 			{
 				if (i == locY && j == locX)
 				{
-					if (getDirection() == DIRECTION_UP) System.out.print("^  ");
-					if (getDirection() == DIRECTION_LEFT) System.out.print("<  ");
-					if (getDirection() == DIRECTION_RIGHT) System.out.print(">  ");
-					if (getDirection() == DIRECTION_DOWN) System.out.print("v  ");
+					if (getDirection() == DIRECTION_UP) speak("^  ");
+					if (getDirection() == DIRECTION_LEFT) speak("<  ");
+					if (getDirection() == DIRECTION_RIGHT) speak(">  ");
+					if (getDirection() == DIRECTION_DOWN) speak("v  ");
 				}
 				else
 				{
 					if (map[i][j] == 0) { map[i][j] = ' '; }
-					System.out.print(map[i][j] + "  ");
+					speak(map[i][j] + "  ");
 				}
 			}
-			System.out.print(" " + i);
-			System.out.println();
+			speak(" " + i);
+			speakln("");
 		}
-		System.out.print("   ");
+		speak("   ");
 		for (int j = mapBoundTop; j <= mapBoundBottom; j++)
 		{
-			System.out.print(j + " ");
+			speak(j + " ");
 		}
-		System.out.print("   \n");
+		speak("   \n");
 	}
 	
 	
@@ -1376,20 +1365,20 @@ public class Agent {
    {
       int i,j;
 
-      System.out.println("\n+-----+");
+      speakln("\n+-----+");
       for( i=0; i < 5; i++ ) {
-         System.out.print("|");
+         speak("|");
          for( j=0; j < 5; j++ ) {
             if(( i == 2 )&&( j == 2 )) {
-               System.out.print('^');
+               speak('^');
             }
             else {
-               System.out.print( view[i][j] );
+               speak( view[i][j] );
             }
          }
-         System.out.println("|");
+         speakln("|");
       }
-      System.out.println("+-----+");
+      speakln("+-----+");
    }
 
    public static void main( String[] args )
@@ -1404,7 +1393,7 @@ public class Agent {
       int ch;
       int i,j;
       if( args.length < 2 ) {
-         System.out.println("Usage: java Agent -p <port>\n");
+         speakln("Usage: java Agent -p <port>\n");
          System.exit(-1);
       }
 
@@ -1416,7 +1405,7 @@ public class Agent {
          out = socket.getOutputStream();
       }
       catch( IOException e ) {
-         System.out.println("Could not bind to port: "+port);
+         speakln("Could not bind to port: "+port);
          System.exit(-1);
       }
       
@@ -1433,7 +1422,7 @@ public class Agent {
                   }
                }
             }
-            System.out.println("==================================================================================");
+            speakln("==================================================================================");
             agent.print_view( view ); // COMMENT THIS OUT BEFORE SUBMISSION
             
             //agent.printMap();
@@ -1446,7 +1435,7 @@ public class Agent {
          }
       }
       catch( IOException e ) {
-         System.out.println("Lost connection to port: "+ port );
+         speakln("Lost connection to port: "+ port );
          System.exit(-1);
       }
       finally {
@@ -1456,5 +1445,17 @@ public class Agent {
          catch( IOException e ) {}
       }
    }
-   
+
+   private static void speak(String s)
+   {
+	   System.out.print(s);
+   }
+   private static void speak(char c)
+   {
+	  speak(new String("" + c));
+   }
+   private static void speakln(String s)
+   {
+	   speak(s + "\n");
+   }
 }
