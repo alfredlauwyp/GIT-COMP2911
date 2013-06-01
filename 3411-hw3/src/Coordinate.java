@@ -1,6 +1,6 @@
-public class Coord {
+public class Coordinate {
 
-	public Coord(int x, int y)
+	public Coordinate(int x, int y)
 	{
 		this.x = x;
 		this.y = y;
@@ -33,7 +33,7 @@ public class Coord {
 	
 	public boolean equals(Object obj)
 	{
-		Coord a = (Coord)obj;
+		Coordinate a = (Coordinate)obj;
 		if (a.x == x && a.y == y)
 		{
 			return true;
